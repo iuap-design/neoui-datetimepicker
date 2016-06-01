@@ -32,7 +32,14 @@ var globs={
 			'js/year.js',
       'js/month.js',
 			'js/yearmonth.js'
-		]
+		],
+    dtJs : [
+      'js/dtJs/time.js',
+      'js/dtJs/datetime.js',
+      'js/dtJs/year.js',
+      'js/dtJs/yearmonth.js',
+      'js/dtJs/month.js'
+    ]
 	},
 	sass : 'css/date.scss'
 }
@@ -48,8 +55,18 @@ gulp.task('Js', function() {
       .pipe(gulp.dest('dist/js'));
 });
 
-gulp.task('css', function() {
+gulp.task('uJs',['Js'], function() {
+    return gulp.src(globs.js.dtJs)
+      .pipe(concat('u-date.js'))
+      .pipe(gulp.dest('dist/js'))
+      .pipe(uglify())
+      .on('error',errHandle)
+      .pipe(rename('u-date.min.js'))
+      .pipe(gulp.dest('dist/js/'));
+      
+});
 
+gulp.task('css', function() {
     return gulp.src(globs.sass)
       .pipe(sass().on('error',errHandle))
       .pipe(gulp.dest('dist/css'))
@@ -59,6 +76,6 @@ gulp.task('css', function() {
 });
 
 
-gulp.task('default',['Js','css'], function() {
+gulp.task('default',['uJs','css'], function() {
 
 });

@@ -1,0 +1,12 @@
+
+// $color-primary: $palette-u-blue-600 !default;
+$primary-color:rgb(158,158,158) !default;
+
+// clockpicker
+$menu-fade-duration: 0.2s !default;
+$unit: 1rem !default;
+$animation-curve-fast-out-slow-in: cubic-bezier(0.4, 0, 0.2, 1) !default;
+$animation-curve-default: $animation-curve-fast-out-slow-in !default;
+
+/* datetimepicker */
+$date-bg-color: rgb(27,174,222) !default;

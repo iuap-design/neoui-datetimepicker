@@ -1,93 +1,5 @@
-@charset "UTF-8";
-/*  IMAGES  */
-/* 默认颜色 */
-/* 主题颜色放入 themeColors.scss
-$color-primary: $palette-indigo-500 !default;
-$color-primary-dark: $palette-indigo-700 !default;
-$color-accent: $palette-pink-A200 !default;
-*/
-/* 客户化 */
-/* 波纹效果 */
-/* 动画 */
-/* 阴影 */
-/* ==========  字体  ========== */
-/* 控件 */
-/* UButton */
-/* UText */
-/*  Navlayout  */
-/* gridlayout */
-/* menu */
-/* CHECKBOX */
-/*  Radio  */
-/* Switch  */
-/* loading */
-/* datetimepicker */
-/* message */
-/* DATA TABLE */
-/* tooltip*/
-/* 进度条 */
-/* ==========  Content Tabs  ========== */
-/* CARD */
-/* Card dimensions */
-/* Cover image */
-/* ==========  Card  ========== */
-/* ============ Forms ============*/
-/* BADGE */
-/*  IMAGES  */
-/* 默认颜色 */
-/* 主题颜色放入 themeColors.scss
-$color-primary: $palette-indigo-500 !default;
-$color-primary-dark: $palette-indigo-700 !default;
-$color-accent: $palette-pink-A200 !default;
-*/
-/* 客户化 */
-/* 波纹效果 */
-/* 动画 */
-/* 阴影 */
-/* ==========  字体  ========== */
-/* 控件 */
-/* UButton */
-/* UText */
-/*  Navlayout  */
-/* gridlayout */
-/* menu */
-/* CHECKBOX */
-/*  Radio  */
-/* Switch  */
-/* loading */
-/* datetimepicker */
-/* message */
-/* DATA TABLE */
-/* tooltip*/
-/* 进度条 */
-/* ==========  Content Tabs  ========== */
-/* CARD */
-/* Card dimensions */
-/* Cover image */
-/* ==========  Card  ========== */
-/* ============ Forms ============*/
-/* BADGE */
-.u-ripple {
-  background: rgb(0,0,0);
-  border-radius: 50%;
-  height: 50px;
-  left: 0;
-  filter: alpha(opacity=0);
-  opacity: 0;
-  filter: alpha(opacity=0) \9;
-  display: none \9;
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  overflow: hidden; }
-  .u-ripple.is-animating {
-    transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1), width 0.3s cubic-bezier(0, 0, 0.2, 1), height 0.3s cubic-bezier(0, 0, 0.2, 1), opacity 0.6s cubic-bezier(0, 0, 0.2, 1); }
-  .u-ripple.is-visible {
-    opacity: 0.3; }
-  .u-ripple.oldIE {
-    background: none; }
+html, body {
+  height: 100%; }
 
 .u-time-content {
   width: 100%;
@@ -105,6 +17,7 @@ $color-accent: $palette-pink-A200 !default;
   width: 20px;
   text-align: center; }
 
+/* datetimepicker */
 .u-clock-ul {
   background-color: #fff;
   position: fixed;
@@ -522,43 +435,7 @@ $color-accent: $palette-pink-A200 !default;
   height: 2.875rem;
   top: 0px; }
 
-/*  IMAGES  */
-/* 默认颜色 */
-/* 主题颜色放入 themeColors.scss
-$color-primary: $palette-indigo-500 !default;
-$color-primary-dark: $palette-indigo-700 !default;
-$color-accent: $palette-pink-A200 !default;
-*/
-/* 客户化 */
-/* 波纹效果 */
-/* 动画 */
-/* 阴影 */
-/* ==========  字体  ========== */
-/* 控件 */
-/* UButton */
-/* UText */
-/*  Navlayout  */
-/* gridlayout */
-/* menu */
-/* CHECKBOX */
-/*  Radio  */
-/* Switch  */
-/* loading */
 /* datetimepicker */
-/* message */
-/* DATA TABLE */
-/* tooltip*/
-/* 进度条 */
-/* ==========  Content Tabs  ========== */
-/* CARD */
-/* Card dimensions */
-/* Cover image */
-/* ==========  Card  ========== */
-/* ============ Forms ============*/
-/* BADGE */
-/* Typography */
-/* Shadows */
-/* Animations */
 .u-date-panel {
   position: fixed;
   left: 0;
@@ -768,7 +645,7 @@ $color-accent: $palette-pink-A200 !default;
   .u-date-panel .u-date-header {
     height: 70px;
     width: 100%;
-    background-color: rgb(27,174,222);
+    background-color: #1baede;
     color: #fff;
     padding: 10px;
     box-sizing: border-box; }
@@ -806,7 +683,7 @@ $color-accent: $palette-pink-A200 !default;
       text-align: center;
       cursor: pointer; }
       .u-date-panel .u-date-content .u-date-cell:hover {
-        background-color: rgba(158,158,158, 0.20); }
+        background-color: #9e9e9e; }
     .u-date-panel .u-date-content .u-date-cell.current {
       color: #fff;
       background: #44BDE4;
@@ -845,7 +722,7 @@ $color-accent: $palette-pink-A200 !default;
       text-align: center;
       cursor: pointer; }
       .u-date-panel .u-date-content .u-date-content-year-cell:hover {
-        background-color: rgba(158,158,158, 0.20); }
+        background-color: #9e9e9e; }
     .u-date-panel .u-date-content .u-date-content-year-cell.current {
       color: #0377C1; }
   .u-date-panel .u-date-content-page {
@@ -1149,7 +1026,7 @@ $color-accent: $palette-pink-A200 !default;
   .u-date-panel-mobile .u-date-header {
     height: 6.5625rem;
     width: 100%;
-    background-color: rgb(27,174,222);
+    background-color: #1baede;
     color: #fff;
     padding: 0.9375rem;
     box-sizing: border-box; }
@@ -1187,7 +1064,7 @@ $color-accent: $palette-pink-A200 !default;
       text-align: center;
       cursor: pointer; }
       .u-date-panel-mobile .u-date-content .u-date-cell:hover {
-        background-color: rgba(158,158,158, 0.20); }
+        background-color: #9e9e9e; }
     .u-date-panel-mobile .u-date-content .u-date-cell.current {
       color: #fff;
       background: #3f51b5;
@@ -1226,7 +1103,7 @@ $color-accent: $palette-pink-A200 !default;
       text-align: center;
       cursor: pointer; }
       .u-date-panel-mobile .u-date-content .u-date-content-year-cell:hover {
-        background-color: rgba(158,158,158, 0.20); }
+        background-color: #9e9e9e; }
     .u-date-panel-mobile .u-date-content .u-date-content-year-cell.current {
       color: #3f51b5; }
   .u-date-panel-mobile .u-date-content-page {
