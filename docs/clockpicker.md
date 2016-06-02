@@ -14,12 +14,10 @@
 
 ##具体示例
 
-![](img/clockpicker.png) 
+![](img/clock.png) 
 
 	<div class='u-clockpicker'>
         <input class="u-input" type="text">
     </div>
 
 
-
-[试一试](http://iuap.yonyou.com:8000/#/demos/ui/clockpicker "试一试")

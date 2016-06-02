@@ -14,22 +14,9 @@
 
 ##具体示例
 
-![](img/date1.png) 
+![](img/dateTime.png) 
 
 	<div class='u-datepicker'>
         <input class="u-input" type="text">
     </div>
-
-
-
-[试一试](http://iuap.yonyou.com:8000/#/demos/ui/datetime/date "试一试")
-
-
-
-
-
-
-
-
-
 

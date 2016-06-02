@@ -21,5 +21,3 @@
     </div>
 
 
-
-[试一试](http://iuap.yonyou.com:8000/#/demos/ui/year "试一试")
