@@ -2507,6 +2507,19 @@ App.fn.compsValidateMultiParam = function(options){
 }
 
 /**
+ * 将comp显示到顶端（此方法只支持body上存在滚动条的情况）
+ * @param {object} comp对象
+ */
+App.fn.showComp = function(comp){
+    var ele = comp.element,off = u.getOffset(ele),scroll = u.getScroll(ele),
+        top = off.top - scroll.top,bodyHeight = document.body.clientHeight,
+        nowTop = document.body.scrollTop;
+    if(top > bodyHeight || top < 0){
+        document.body.scrollTop = nowTop + top;
+    }
+}
+
+/**
  * 根据类型获取控件
  * @param {String} type
  * @param {object} element
@@ -5905,6 +5918,944 @@ if (document.readyState && document.readyState === 'complete'){
         u.compMgr.updateComp();
     });
 }
+u.Text = u.BaseComponent.extend({
+    _Constant: {
+        NO_MAX_ROWS: -1,
+        MAX_ROWS_ATTRIBUTE: 'maxrows'
+    },
+
+    _CssClasses: {
+        LABEL: 'u-label',
+        INPUT: 'u-input',
+        IS_DIRTY: 'is-dirty',
+        IS_FOCUSED: 'is-focused',
+        IS_DISABLED: 'is-disabled',
+        IS_INVALID: 'is-invalid',
+        IS_UPGRADED: 'is-upgraded'
+    },
+
+    init: function () {
+        var oThis = this;
+        this.maxRows = this._Constant.NO_MAX_ROWS;
+        this.label_ = this.element.querySelector('.' + this._CssClasses.LABEL);
+        this._input = this.element.querySelector('input');
+
+        if (this._input) {
+            if (this._input.hasAttribute(
+                    /** @type {string} */ (this._Constant.MAX_ROWS_ATTRIBUTE))) {
+                this.maxRows = parseInt(this._input.getAttribute(
+                    /** @type {string} */ (this._Constant.MAX_ROWS_ATTRIBUTE)), 10);
+                if (isNaN(this.maxRows)) {
+                    this.maxRows = this._Constant.NO_MAX_ROWS;
+                }
+            }
+
+            this.boundUpdateClassesHandler = this._updateClasses.bind(this);
+            this.boundFocusHandler = this._focus.bind(this);
+            this.boundBlurHandler = this._blur.bind(this);
+            this.boundResetHandler = this._reset.bind(this);
+            this._input.addEventListener('input', this.boundUpdateClassesHandler);
+            if(u.isIE8){
+                this._input.addEventListener('propertychange', function(){
+                    oThis._updateClasses();
+                });
+            }
+            this._input.addEventListener('focus', this.boundFocusHandler);
+            if(u.isIE8 || u.isIE9){
+                if(this.label_){
+                    this.label_.addEventListener('click', function(){
+                        this._input.focus();
+                    }.bind(this));
+                }
+            }
+            
+            this._input.addEventListener('blur', this.boundBlurHandler);
+            this._input.addEventListener('reset', this.boundResetHandler);
+
+            if (this.maxRows !== this._Constant.NO_MAX_ROWS) {
+                // TODO: This should handle pasting multi line text.
+                // Currently doesn't.
+                this.boundKeyDownHandler = this._down.bind(this);
+                this._input.addEventListener('keydown', this.boundKeyDownHandler);
+            }
+            var invalid = u.hasClass(this.element, this._CssClasses.IS_INVALID);
+            this._updateClasses();
+            u.addClass(this.element, this._CssClasses.IS_UPGRADED);
+            if (invalid) {
+                u.addClass(this.element, this._CssClasses.IS_INVALID);
+            }
+        }
+    },
+
+    /**
+     * Handle input being entered.
+     *
+     * @param {Event} event The event that fired.
+     * @private
+     */
+    _down: function (event) {
+        var currentRowCount = event.target.value.split('\n').length;
+        if (event.keyCode === 13) {
+            if (currentRowCount >= this.maxRows) {
+                event.preventDefault();
+            }
+        }
+    },
+    /**
+     * Handle focus.
+     *
+     * @param {Event} event The event that fired.
+     * @private
+     */
+    _focus : function (event) {
+        u.addClass(this.element, this._CssClasses.IS_FOCUSED);
+    },
+    /**
+     * Handle lost focus.
+     *
+     * @param {Event} event The event that fired.
+     * @private
+     */
+    _blur : function (event) {
+        u.removeClass(this.element, this._CssClasses.IS_FOCUSED);
+    },
+    /**
+     * Handle reset event from out side.
+     *
+     * @param {Event} event The event that fired.
+     * @private
+     */
+    _reset : function (event) {
+        this._updateClasses();
+    },
+    /**
+     * Handle class updates.
+     *
+     * @private
+     */
+    _updateClasses : function () {
+        this.checkDisabled();
+        this.checkValidity();
+        this.checkDirty();
+    },
+
+// Public methods.
+
+    /**
+     * Check the disabled state and update field accordingly.
+     *
+     * @public
+     */
+    checkDisabled : function () {
+        if (this._input.disabled) {
+            u.addClass(this.element, this._CssClasses.IS_DISABLED);
+        } else {
+            u.removeClass(this.element, this._CssClasses.IS_DISABLED);
+        }
+    },
+    /**
+     * Check the validity state and update field accordingly.
+     *
+     * @public
+     */
+    checkValidity : function () {
+        if (this._input.validity) {
+            if (this._input.validity.valid) {
+                u.removeClass(this.element, this._CssClasses.IS_INVALID);
+            } else {
+                u.addClass(this.element, this._CssClasses.IS_INVALID);
+            }
+        }
+    },
+    /**
+     * Check the dirty state and update field accordingly.
+     *
+     * @public
+     */
+    checkDirty: function () {
+        if (this._input.value && this._input.value.length > 0) {
+            u.addClass(this.element, this._CssClasses.IS_DIRTY);
+        } else {
+            u.removeClass(this.element, this._CssClasses.IS_DIRTY);
+        }
+    },
+    /**
+     * Disable text field.
+     *
+     * @public
+     */
+    disable: function () {
+        this._input.disabled = true;
+        this._updateClasses();
+    },
+    /**
+     * Enable text field.
+     *
+     * @public
+     */
+    enable: function () {
+        this._input.disabled = false;
+        this._updateClasses();
+    },
+    /**
+     * Update text field value.
+     *
+     * @param {string} value The value to which to set the control (optional).
+     * @public
+     */
+    change: function (value) {
+        this._input.value = value || '';
+        this._updateClasses();
+    }
+
+
+});
+
+
+
+//if (u.compMgr)
+//    u.compMgr.addPlug({
+//        name:'text',
+//        plug: u.Text
+//    })
+
+u.compMgr.regComp({
+    comp: u.Text,
+    compAsString: 'u.Text',
+    css: 'u-text'
+});
+
+u.FloatAdapter = u.BaseAdapter.extend({
+    mixins:[u.ValueMixin,u.EnableMixin, u.RequiredMixin, u.ValidateMixin],
+    init: function () {
+        var self = this;
+        this.element = this.element.nodeName === 'INPUT' ? this.element : this.element.querySelector('input');
+        if (!this.element){
+            throw new Error('not found INPUT element, u-meta:' + JSON.stringify(this.options));
+        };
+        this.maskerMeta = u.core.getMaskerMeta('float') || {};
+        this.validType = 'float';
+        this.maskerMeta.precision = this.getOption('precision') || this.maskerMeta.precision;
+        this.max = this.getOption('max') || "10000000000000000000";
+        this.min = this.getOption('min') || "-10000000000000000000";
+        this.maxNotEq = this.getOption('maxNotEq');
+        this.minNotEq = this.getOption('minNotEq');
+
+        //处理数据精度
+        this.dataModel.refRowMeta(this.field, "precision").subscribe(function(precision){
+            if(precision === undefined) return;
+            self.setPrecision(precision)
+        });
+        this.formater = new u.NumberFormater(this.maskerMeta.precision);
+        this.masker = new u.NumberMasker(this.maskerMeta);
+        u.on(this.element, 'focus', function(){
+            if(self.enable){
+                self.onFocusin()
+            }
+        })
+
+        u.on(this.element, 'blur',function(){
+            if(self.enable){
+                if (!self.doValidate() && self._needClean()) {
+                    if (self.required && (self.element.value === null || self.element.value === undefined || self.element.value === '')) {
+                        // 因必输项清空导致检验没通过的情况
+                        self.setValue('')
+                    } else {
+                        self.element.value = self.getShowValue()
+                    }
+                }
+                else
+                    self.setValue(self.element.value)
+            }
+        });
+
+
+    },
+    /**
+     * 修改精度
+     * @param {Integer} precision
+     */
+    setPrecision: function (precision) {
+        if (this.maskerMeta.precision == precision) return;
+        this.maskerMeta.precision = precision
+        this.formater = new u.NumberFormater(this.maskerMeta.precision);
+        this.masker = new u.NumberMasker(this.maskerMeta);
+        var currentRow = this.dataModel.getCurrentRow();
+        if (currentRow) {
+            var v = this.dataModel.getCurrentRow().getValue(this.field)
+            this.showValue = this.masker.format(this.formater.format(v)).value
+        } else {
+            this.showValue = this.masker.format(this.formater.format(this.trueValue)).value
+        }
+
+        this.setShowValue(this.showValue)
+    },
+    onFocusin: function () {
+        var v = this.dataModel.getCurrentRow().getValue(this.field), vstr = v + '', focusValue = v;
+        if (u.isNumber(v) && u.isNumber(this.maskerMeta.precision)) {
+            if (vstr.indexOf('.') >= 0) {
+                var sub = vstr.substr(vstr.indexOf('.') + 1);
+                if (sub.length < this.maskerMeta.precision || parseInt(sub.substr(this.maskerMeta.precision)) == 0) {
+                    focusValue = this.formater.format(v)
+                }
+            } else if (this.maskerMeta.precision > 0) {
+                focusValue = this.formater.format(v)
+            }
+        }
+        focusValue = parseFloat(focusValue) || '';
+        this.setShowValue(focusValue)
+    },
+    _needClean: function () {
+        return true
+    }
+});
+
+u.compMgr.addDataAdapter({
+        adapter: u.FloatAdapter,
+        name: 'float'
+    });
+/**
+ * 货币控件
+ */
+u.CurrencyAdapter = u.FloatAdapter.extend({
+    init: function () {
+        var self = this;
+        u.CurrencyAdapter.superclass.init.apply(this);
+
+        this.maskerMeta = iweb.Core.getMaskerMeta('currency') || {};
+        this.maskerMeta.precision = this.getOption('precision') || this.maskerMeta.precision;
+        this.maskerMeta.curSymbol = this.getOption('curSymbol') || this.maskerMeta.curSymbol;
+        this.validType = 'float';
+        this.dataModel.on(this.field + '.curSymbol.' + u.DataTable.ON_CURRENT_META_CHANGE, function (event) {
+            self.setCurSymbol(event.newValue)
+        });
+        this.formater = new u.NumberFormater(this.maskerMeta.precision);
+        this.masker = new CurrencyMasker(this.maskerMeta);
+    },
+    /**
+     * 修改精度
+     * @param {Integer} precision
+     */
+    setPrecision: function (precision) {
+        if (this.maskerMeta.precision == precision) return
+        this.maskerMeta.precision = precision
+        this.formater = new u.NumberFormater(this.maskerMeta.precision);
+        this.masker = new u.CurrencyMasker(this.maskerMeta);
+        var currentRow = this.dataModel.getCurrentRow();
+        if (currentRow) {
+            var v = this.dataModel.getCurrentRow().getValue(this.field)
+            this.showValue = this.masker.format(this.formater.format(v)).value
+        } else {
+            this.showValue = this.masker.format(this.formater.format(this.trueValue)).value
+        }
+        this.setShowValue(this.showValue)
+    },
+    /**
+     * 修改币符
+     * @param {String} curSymbol
+     */
+    setCurSymbol: function (curSymbol) {
+        if (this.maskerMeta.curSymbol == curSymbol) return
+        this.maskerMeta.curSymbol = curSymbol
+        this.masker.formatMeta.curSymbol = this.maskerMeta.curSymbol
+        this.element.trueValue = this.trueValue
+        this.showValue = this.masker.format(this.trueValue).value
+        this.setShowValue(this.showValue)
+
+    },
+    onFocusin: function (e) {
+        var v = this.getValue(), vstr = v + '', focusValue = v
+        if (u.isNumber(v) && u.isNumber(this.maskerMeta.precision)) {
+            if (vstr.indexOf('.') >= 0) {
+                var sub = vstr.substr(vstr.indexOf('.') + 1)
+                if (sub.length < this.maskerMeta.precision || parseInt(sub.substr(this.maskerMeta.precision)) == 0) {
+                    focusValue = this.formater.format(v)
+                }
+            } else if (this.maskerMeta.precision > 0) {
+                focusValue = this.formater.format(v)
+            }
+        }
+        this.setShowValue(focusValue)
+
+    }
+})
+
+u.compMgr.addDataAdapter({
+        adapter: u.CurrencyAdapter,
+        name: 'currency'
+    });
+
+
+u.IntegerAdapter = u.BaseAdapter.extend({
+    mixins:[u.ValueMixin,u.EnableMixin, u.RequiredMixin, u.ValidateMixin],
+    init: function () {
+        var self = this;
+        this.element = this.element.nodeName === 'INPUT' ? this.element : this.element.querySelector('input');
+        if (!this.element){
+            throw new Error('not found INPUT element, u-meta:' + JSON.stringify(this.options));
+        };
+        this.validType = this.options['validType'] || 'integer';
+        this.max = this.options['max'];
+        this.min = this.options['min'];
+        this.maxNotEq = this.options['maxNotEq'];
+        this.minNotEq = this.options['minNotEq'];
+        this.maxLength = this.options['maxLength'] ? options['maxLength'] : 25;
+        this.minLength = this.options['mixLength'] ? options['mixLength'] : 0;
+        if (this.dataModel) {
+            this.min = this.dataModel.getMeta(this.field, "min") !== undefined ? this.dataModel.getMeta(this.field, "min") : this.min;
+            this.max = this.dataModel.getMeta(this.field, "max") !== undefined ? this.dataModel.getMeta(this.field, "max") : this.max;
+            this.minNotEq = this.dataModel.getMeta(this.field, "minNotEq") !== undefined ? this.dataModel.getMeta(this.field, "minNotEq") : this.minNotEq;
+            this.maxNotEq = this.dataModel.getMeta(this.field, "maxNotEq") !== undefined ? this.dataModel.getMeta(this.field, "maxNotEq") : this.maxNotEq;
+            this.minLength = u.isNumber(this.dataModel.getMeta(this.field, "minLength")) ? this.dataModel.getMeta(this.field, "minLength") : this.minLength;
+            this.maxLength = u.isNumber(this.dataModel.getMeta(this.field, "maxLength")) ? this.dataModel.getMeta(this.field, "maxLength") : this.maxLength;
+        }
+        u.on(this.element, 'focus', function(){
+            if(self.enable){
+                self.setShowValue(self.getValue())
+            }
+        })
+
+        u.on(this.element, 'blur',function(){
+            if(self.enable){
+                if (!self.doValidate() && self._needClean()) {
+                    if (self.required && (self.element.value === null || self.element.value === undefined || self.element.value === '')) {
+                        // 因必输项清空导致检验没通过的情况
+                        self.setValue('')
+                    } else {
+                        self.element.value = self.getShowValue()
+                    }
+                }
+                else
+                    self.setValue(self.element.value)
+            }
+        });
+    }
+});
+u.compMgr.addDataAdapter({
+        adapter: u.IntegerAdapter,
+        name: 'integer'
+    });
+
+
+/**
+ * 百分比控件
+ */
+u.PercentAdapter = u.FloatAdapter.extend({
+    init: function () {
+        u.PercentAdapter.superclass.init.apply(this);
+        this.validType = 'float';
+        this.maskerMeta = iweb.Core.getMaskerMeta('percent') || {};
+        this.maskerMeta.precision = this.getOption('precision') || this.maskerMeta.precision;
+        if (this.maskerMeta.precision){
+            this.maskerMeta.precision = parseInt(this.maskerMeta.precision) + 2;
+        }
+        this.formater = new u.NumberFormater(this.maskerMeta.precision);
+        this.masker = new PercentMasker(this.maskerMeta);
+    }
+});
+u.compMgr.addDataAdapter(
+    {
+        adapter: u.PercentAdapter,
+        name: 'percent'
+    });
+
+
+
+u.StringAdapter = u.BaseAdapter.extend({
+    mixins:[u.ValueMixin,u.EnableMixin, u.RequiredMixin, u.ValidateMixin],
+    init: function(){
+        var self = this;
+        this.element = this.element.nodeName === 'INPUT' ? this.element : this.element.querySelector('input');
+        if (!this.element){
+            throw new Error('not found INPUT element, u-meta:' + JSON.stringify(this.options));
+        };
+        this.validType = this.options['validType'] || 'string';
+        this.minLength = this.getOption('minLength');
+        this.maxLength = this.getOption('maxLength');
+
+        u.on(this.element, 'focus', function(){
+            if(self.enable){
+                self.setShowValue(self.getValue())
+            }
+        })
+
+        u.on(this.element, 'blur',function(e){
+            if(self.enable){
+                if (!self.doValidate() && self._needClean()) {
+                    if (self.required && (self.element.value === null || self.element.value === undefined || self.element.value === '')) {
+                        // 因必输项清空导致检验没通过的情况
+                        self.setValue('')
+                    } else {
+                        self.element.value = self.getShowValue()
+                    }
+                }
+                else
+                    self.setValue(self.element.value)
+            }
+        });
+    }
+});
+u.compMgr.addDataAdapter({
+        adapter: u.StringAdapter,
+        name: 'string'
+    });
+
+	
+
+u.TextAreaAdapter = u.BaseAdapter.extend({
+    mixins:[u.ValueMixin,u.EnableMixin, u.RequiredMixin, u.ValidateMixin],
+    init: function () {
+        var self = this;
+        this.element = this.element.nodeName === 'TEXTAREA' ? this.element : this.element.querySelector('textarea');
+        if (!this.element){
+            throw new Error('not found TEXTAREA element, u-meta:' + JSON.stringify(this.options));
+        };
+
+        u.on(this.element, 'focus', function () {
+            self.setShowValue(self.getValue())
+        });
+        u.on(this.element, 'blur', function () {
+            self.setValue(self.element.value)
+        })
+    }
+});
+
+u.compMgr.addDataAdapter({
+        adapter: u.TextAreaAdapter,
+        name: 'textarea'
+    })
+
+/**
+ * Created by dingrf on 2016/1/25.
+ */
+
+u.TextFieldAdapter = u.BaseAdapter.extend({
+    /**
+     *
+     * @param comp
+     * @param options ：
+     *      el: '#content',  对应的dom元素
+     *      options: {},     配置
+     *      model:{}        模型，包括数据和事件
+     */
+    initialize: function (options) {
+        u.TextFieldAdapter.superclass.initialize.apply(this, arguments);
+        //this.comp = comp;
+        //this.element = options['el'];
+        //this.options = options['options'];
+        //this.viewModel = options['model'];
+        var dataType = this.dataModel.getMeta(this.field,'type') || 'string';
+        //var dataType = this.options['dataType'] || 'string';
+
+        this.comp = new u.Text(this.element);
+        this.element['u.Text'] = this.comp;
+
+
+        if (dataType === 'float'){
+            this.trueAdpt = new u.FloatAdapter(options);
+        }
+        else if (dataType === 'string'){
+            this.trueAdpt = new u.StringAdapter(options);
+        }
+        else if (dataType === 'integer'){
+            this.trueAdpt = new u.IntegerAdapter(options);
+        }else{
+            throw new Error("'u-text' only support 'float' or 'string' or 'integer' field type, not support type: '" + dataType + "', field: '" +this.field+ "'");
+        }
+        u.extend(this, this.trueAdpt);
+
+
+        this.trueAdpt.comp = this.comp;
+        this.trueAdpt.setShowValue = function (showValue) {
+            this.showValue = showValue;
+            //if (this.comp.compType === 'text')
+            this.comp.change(showValue);
+            this.element.title = showValue;
+        }
+        return this.trueAdpt;
+    }
+});
+
+u.compMgr.addDataAdapter(
+    {
+        adapter: u.TextFieldAdapter,
+        name: 'u-text'
+        //dataType: 'float'
+    })
+/**
+ * Created by dingrf on 2015-11-20.
+ */
+
+u.Combo = u.BaseComponent.extend({
+    init: function () {
+        this.mutilSelect = this.options['mutilSelect'] || false;
+        if (u.hasClass(this.element, 'mutil-select')){
+            this.mutilSelect = true
+        }
+
+        this.onlySelect = this.options['onlySelect'] || false;
+        if(this.mutilSelect)
+            this.onlySelect = true;
+
+        this.comboDatas = [];
+        var i, option, datas = [], self = this;
+        //u.addClass(this.element, 'u-text')
+        new u.Text(this.element);
+        var options = this.element.getElementsByTagName('option');
+        for (i = 0; i < options.length; i++) {
+            option = options[i];
+            datas.push({value: option.value, name: option.text});
+        }
+
+        this.setComboData(datas);
+        this._input = this.element.querySelector("input");
+        if(this.onlySelect){
+            setTimeout(function(){
+                self._input.setAttribute('readonly','readonly');
+            },1000);
+            
+        }else{
+            u.on(this._input, 'blur', function(e){
+                var v = this.value;
+                /*校验数值是否存在于datasource的name中*/
+                for(var i = 0; i< self.comboDatas.length;i++){
+                    if(v == self.comboDatas[i].name){
+                        v = self.comboDatas[i].value;
+                        break;
+                    }
+                    
+                }
+                self.setValue(v);
+            })
+        }
+        this._combo_name_par=this.element.querySelector(".u-combo-name-par");
+        u.on(this._input, 'focus', function (e) {
+            self._inputFocus = true;
+            self.show(e);
+            u.stopEvent(e);
+        })
+        u.on(this._input, 'blur', function(e){
+            self._inputFocus = false;
+        })
+        this.iconBtn = this.element.querySelector("[data-role='combo-button']");
+        if (this.iconBtn){
+            u.on(this.iconBtn, 'click', function(e){
+                self.show(e);
+                u.stopEvent(e);
+            })
+        }
+    },
+
+    show: function (evt) {
+        var self = this,width=this.element.offsetWidth;
+        u.showPanelByEle({
+            ele:this._input,
+            panel:this._ul,
+            position:"bottomLeft"
+        });
+        u.on(document.body,'scroll',function(){
+            u.showPanelByEle({
+                ele:self._input,
+                panel:self._ul,
+                position:"bottomLeft"
+            });
+        })    
+	    this._ul.style.width = width + 'px';
+        u.addClass(this._ul, 'is-animating');
+        this._ul.style.zIndex = u.getZIndex();
+        u.addClass(this._ul, 'is-visible');
+
+        var callback = function (e) {
+            if(e === evt || e.target === this._input || self._inputFocus == true) return;
+            if(this.mutilSelect && (u.closest(e.target,'u-combo-ul') === self._ul || u.closest(e.target, 'u-combo-name-par') || u.closest(e.target, 'u-combo-name')) ) return;
+            u.off(document,'click',callback);
+            // document.removeEventListener('click', callback);
+            this.hide();
+        }.bind(this);
+        u.on(document,'click',callback);
+        // document.addEventListener('click', callback);
+
+    },
+
+    hide: function () {
+        u.removeClass(this._ul, 'is-visible');
+        this._ul.style.zIndex = -1;
+        this.trigger('select', {value: this.value});
+    },
+
+    /**
+     * 设置下拉数据
+     * @param datas  数据项
+     * @param options  指定name value对应字段 可以为空
+     */
+    setComboData: function (datas, options) {
+        var i, li, self = this;
+        if (!options)
+            this.comboDatas = datas;
+        else{
+            this.comboDatas = []
+            for(var i = 0; i< datas.length; i++){
+                this.comboDatas.push({name:datas[i][options.name],value:datas[i][options.value]});
+            }
+        }
+        if (!this._ul) {
+            this._ul = u.makeDOM('<ul class="u-combo-ul"></ul>');
+            // this.element.parentNode.appendChild(this._ul);
+            document.body.appendChild(this._ul);
+        }
+        this._ul.innerHTML = '';
+        //TODO 增加filter
+        for (i = 0; i < this.comboDatas.length; i++) {
+            li = u.makeDOM('<li class="u-combo-li">' + this.comboDatas[i].name + '</li>');//document.createElement('li');
+            li._index = i;
+            u.on(li, 'click', function () {
+                self.selectItem(this._index);
+            })
+            var rippleContainer = document.createElement('span');
+            u.addClass(rippleContainer, 'u-ripple');
+            li.appendChild(rippleContainer);
+            new URipple(li)
+            this._ul.appendChild(li);
+        }
+    },
+
+    selectItem: function (index) {
+        var self = this;
+        
+        if (this.mutilSelect){
+            var val = this.comboDatas[index].value;
+            var name = this.comboDatas[index].name;
+            var index = (this.value + ',').indexOf(val + ',');
+            var l = val.length + 1;
+            var flag;
+            if (index != -1){ // 已经选中
+                this.value = this.value.substring(0,index) + this.value.substring(index + l)  
+                flag = '-' 
+            }else{
+                this.value = (!this.value) ? val + ',' : this.value + val + ',';
+                flag = '+'
+            }
+            
+            if(flag == '+'){
+                var nameDiv= u.makeDOM('<div class="u-combo-name" key="' + val + '">'+ name + /*<a href="javascript:void(0)" class="remove">x</a>*/'</div>');
+                var parNameDiv=u.makeDOM('<div class="u-combo-name-par" style="position:absolute"></div>');
+                /*var _a = nameDiv.querySelector('a');
+                u.on(_a, 'click', function(){
+                    var values = self.value.split(',');
+                    values.splice(values.indexOf(val),1);
+                    self.value = values.join(',');
+                    self._combo_name_par.removeChild(nameDiv);
+                    self._updateItemSelect();
+                    self.trigger('select', {value: self.value, name: name});
+                });*/
+                if(!this._combo_name_par){
+                    this._input.parentNode.insertBefore(parNameDiv, this._input);
+                    this._combo_name_par=parNameDiv;
+                }
+                this._combo_name_par.appendChild(nameDiv);
+            }else{
+                if(this._combo_name_par){
+                    var comboDiv = this._combo_name_par.querySelector('[key="'+val+'"]');
+                    if(comboDiv)
+                        comboDiv.remove();
+                }
+            }
+            
+
+            this._updateItemSelect();
+
+            // this.trigger('select', {value: this.value, name: name});
+        }else{
+            this.value = this.comboDatas[index].value;
+            this._input.value = this.comboDatas[index].name;
+            this._updateItemSelect();
+            // this.trigger('select', {value: this.value, name: this._input.value});
+        }
+
+        
+    },
+
+    _updateItemSelect: function() {
+        var lis = this._ul.querySelectorAll('.u-combo-li')
+        if (this.mutilSelect){
+            var values = this.value.split(',');
+            for(var i=0;i<lis.length;i++) {
+                if(values.indexOf(this.comboDatas[i].value) > -1) {
+                    u.addClass(lis[i], 'is-selected');
+                } else {
+                    u.removeClass(lis[i], 'is-selected');
+                }
+            }
+            /*根据多选区域div的高度调整input的高度*/
+            var h = this._combo_name_par.offsetHeight;
+            if(h < 25)
+                h = 25
+            this._input.style.height = h + 'px';
+        } else {
+            for(var i=0;i<lis.length;i++) {
+                if(this.value == this.comboDatas[i].value) {
+                    u.addClass(lis[i], 'is-selected');
+                } else {
+                    u.removeClass(lis[i], 'is-selected');
+                }
+            }
+
+        }
+    },
+
+    /**
+     *设置值
+     * @param value
+     */
+    setValue: function(value){
+        var self = this;
+        value = value + '';
+    	value = value || '';
+    	
+        var values = value.split(',');
+        if (this.mutilSelect === true) {
+            if(self._combo_name_par)
+                self._combo_name_par.innerHTML = '';
+            this.value = '';
+        }
+        if(!value) {
+            this._input.value = '';
+            this.value = '';
+        }
+        this.comboDatas.forEach(function(item, index){
+            if (this.mutilSelect === true){
+                if (values.indexOf(item.value) != -1){
+                    this.selectItem(index)
+                }
+            }else {
+                if (item.value === value) {
+                    this.selectItem(index);
+                    return;
+                }
+            }
+        }.bind(this));
+        if(!this.onlySelect){
+            this.value = value;
+            this.trigger('select', {value: this.value, name: this._input.value});
+        }
+    },
+
+    /**
+     * 设置显示名
+     * @param name
+     */
+    setName: function(name){
+        this.comboDatas.forEach(function(item, index){
+            if(item.name === name){
+                this.selectItem(index);
+                return;
+            }
+        }.bind(this));
+    }
+
+});
+
+u.compMgr.regComp({
+    comp: u.Combo,
+    compAsString: 'u.Combo',
+    css: 'u-combo'
+})
+u.ComboboxAdapter = u.BaseAdapter.extend({
+    mixins:[u.ValueMixin,u.EnableMixin, u.RequiredMixin, u.ValidateMixin],
+    init: function () {
+        var self = this;
+        //u.ComboboxAdapter.superclass.initialize.apply(this, arguments);
+        this.datasource = u.getJSObject(this.viewModel, this.options['datasource']);
+        this.mutil = this.options.mutil || false;
+        this.onlySelect = this.options.onlySelect || false;
+        this.validType = 'combobox';
+        this.comp = new u.Combo({el:this.element,mutilSelect:this.mutil,onlySelect:this.onlySelect});
+        this.element['u.Combo'] = this.comp;
+        if (this.datasource){
+            this.comp.setComboData(this.datasource);
+        }else{
+            if(u.isIE8 || u.isIE9)
+                alert("IE8/IE9必须设置datasource");
+        }
+        ////TODO 后续支持多选
+        //if (this.mutil) {
+        //    //$(this.comboEle).on("mutilSelect", function (event, value) {
+        //    //    self.setValue(value)
+        //    //})
+        //}
+        this.comp.on('select', function(event){
+            // self.slice = true;
+            // if(self.dataModel)
+            //     self.dataModel.setValue(self.field, event.value);
+            // self.slice = false;
+            self.setValue(event.value);
+        });
+        //if(this.dataModel){
+        //    this.dataModel.ref(this.field).subscribe(function(value) {
+        //        self.modelValueChange(value)
+        //    })
+        //}
+    },
+    modelValueChange: function (value) {
+        if (this.slice) return;
+        //this.trueValue = value;
+        if (value === null || typeof value == "undefined")
+            value = "";
+        this.comp.setValue(value);
+        this.trueValue = this.formater ? this.formater.format(value) : value;
+        //this.element.trueValue = this.trueValue;
+        this.showValue = this.masker ? this.masker.format(this.trueValue).value : this.trueValue;
+        this.setShowValue(this.showValue);
+    },
+    //setValue: function (value) {
+    //    this.trueValue = value;
+    //    this.slice = true;
+    //    this.setModelValue(this.trueValue);
+    //    this.slice = false;
+    //},
+    //getValue: function () {
+    //    return this.trueValue
+    //},
+    setEnable: function (enable) {
+        var self = this;
+        if (enable === true || enable === 'true') {
+            this.enable = true;
+            this.element.removeAttribute('readonly');
+            this.comp._input.removeAttribute('readonly');
+            u.removeClass(this.element.parentNode,'disablecover');
+            u.on(this.comp._input, 'focus', function (e) {
+                self.comp.show(e);
+                u.stopEvent(e);
+            })
+            if (this.comp.iconBtn){
+                u.on(this.comp.iconBtn, 'click', function(e){
+                    self.comp.show(e);
+                    u.stopEvent(e);
+                })
+            }
+        } else if (enable === false || enable === 'false') {
+            this.enable = false;
+            this.element.setAttribute('readonly', 'readonly');
+            this.comp._input.setAttribute('readonly', 'readonly');
+            u.addClass(this.element.parentNode,'disablecover');
+            u.off(this.comp._input, 'focus')
+            if (this.comp.iconBtn){
+                u.off(this.comp.iconBtn, 'click')
+            }
+        }
+    }
+});
+
+u.compMgr.addDataAdapter(
+    {
+        adapter: u.ComboboxAdapter,
+        name: 'u-combobox'
+    });
+
+
+
+
+
 
 u.Button = u.BaseComponent.extend({
     init:function(){
@@ -5932,6 +6883,224 @@ u.compMgr.regComp({
     css: 'u-button'
 })
 
+u.Tooltip = function(element,options){
+	this.init(element,options)
+	//this.show()
+}
+
+
+u.Tooltip.prototype = {
+    defaults:{
+        animation: true,
+        placement: 'top',
+        //selector: false,
+        template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow" style="left: 50%;"></div><div class="tooltip-inner"></div></div>',
+        trigger: 'hover focus',
+        title: '',
+        delay: 0,
+        html: false,
+        container: false,
+        viewport: {
+            selector: 'body',
+            padding: 0
+        }
+    },
+    init: function (element,options) {
+		this.element = element
+        this.options = u.extend({}, this.defaults, options);
+        this._viewport = this.options.viewport && document.querySelector(this.options.viewport.selector || this.options.viewport);
+
+        var triggers = this.options.trigger.split(' ')
+
+        for (var i = triggers.length; i--;) {
+            var trigger = triggers[i]
+            if (trigger == 'click') {
+                u.on(this.element, 'click', this.toggle.bind(this));
+            } else if (trigger != 'manual') {
+                var eventIn = trigger == 'hover' ? 'mouseenter' : 'focusin'
+                var eventOut = trigger == 'hover' ? 'mouseleave' : 'focusout'
+                u.on(this.element, eventIn, this.enter.bind(this));
+                u.on(this.element, eventOut, this.leave.bind(this));
+            }
+        }
+        this.options.title = this.options.title || this.element.getAttribute('title');
+        this.element.removeAttribute('title');
+        if (this.options.delay && typeof this.options.delay == 'number') {
+            this.options.delay = {
+                show: this.options.delay,
+                hide: this.options.delay
+            }
+        };
+        //tip模板对应的dom
+        this.tipDom = u.makeDOM(this.options.template);
+        this.arrrow = this.tipDom.querySelector('.tooltip-arrow');
+        // tip容器,默认为当前元素的parent
+        this.container = this.options.container ? document.querySelector(this.options.container) : this.element.parentNode;
+    },
+    enter: function(){
+        var self = this;
+        clearTimeout(this.timeout);
+        this.hoverState = 'in';
+        if (!this.options.delay || !this.options.delay.show) return this.show();
+
+        this.timeout = setTimeout(function () {
+            if (self.hoverState == 'in') self.show()
+        }, this.options.delay.show)
+    },
+    leave: function(){
+        var self = this;
+        clearTimeout(this.timeout);
+        self.hoverState = 'out'
+        if (!self.options.delay || !self.options.delay.hide) return self.hide()
+        self.timeout = setTimeout(function () {
+            if (self.hoverState == 'out') self.hide()
+        }, self.options.delay.hide)
+    },
+    show: function(){
+        var self = this;
+        this.tipDom.querySelector('.tooltip-inner').innerHTML = this.options.title;
+        this.tipDom.style.zIndex = u.getZIndex();
+        this.container.appendChild(this.tipDom);
+        /*var placement = this.options.placement;
+        var pos = this.getPosition()
+        var actualWidth = this.tipDom.offsetWidth
+        var actualHeight = this.tipDom.offsetHeight
+        var calculatedOffset = this.getCalculatedOffset(placement, pos, actualWidth, actualHeight)
+
+        this.applyPlacement(calculatedOffset, placement)*/
+        u.addClass(this.tipDom,'active');
+        u.showPanelByEle({
+            ele:this.element,
+            panel:this.tipDom,
+            position:'topCenter'
+        });
+        u.on(document.body,'scroll',function(){
+            u.showPanelByEle({
+                ele:self.element,
+                panel:self.tipDom,
+                position:"bottomLeft"
+            });
+        })   
+    },
+    hide: function(){
+		if (this.container.contains(this.tipDom)){
+			u.removeClass(this.tipDom, 'active');
+			this.container.removeChild(this.tipDom);
+		}
+    },
+    applyPlacement: function(offset, placement){
+        var width = this.tipDom.offsetWidth
+        var height = this.tipDom.offsetHeight
+
+        // manually read margins because getBoundingClientRect includes difference
+        var marginTop = parseInt(this.tipDom.style.marginTop, 10)
+        var marginLeft = parseInt(this.tipDom.style.marginTop, 10)
+
+        // we must check for NaN for ie 8/9
+        if (isNaN(marginTop))  marginTop = 0
+        if (isNaN(marginLeft)) marginLeft = 0
+
+        offset.top = offset.top + marginTop
+        offset.left = offset.left + marginLeft
+
+        // $.fn.offset doesn't round pixel values
+        // so we use setOffset directly with our own function B-0
+        this.tipDom.style.left = offset.left + 'px';
+        this.tipDom.style.top = offset.top + 'px';
+
+        u.addClass(this.tipDom,'active');
+
+        // check to see if placing tip in new offset caused the tip to resize itself
+        var actualWidth = this.tipDom.offsetWidth
+        var actualHeight =this.tipDom.offsetHeight
+
+        if (placement == 'top' && actualHeight != height) {
+            offset.top = offset.top + height - actualHeight
+        }
+        var delta = this.getViewportAdjustedDelta(placement, offset, actualWidth, actualHeight)
+
+        if (delta.left) offset.left += delta.left
+        else offset.top += delta.top
+
+        var isVertical = /top|bottom/.test(placement)
+        var arrowDelta = isVertical ? delta.left * 2 - width + actualWidth : delta.top * 2 - height + actualHeight
+        var arrowOffsetPosition = isVertical ? 'offsetWidth' : 'offsetHeight'
+
+        //$tip.offset(offset)
+        this.tipDom.style.left = offset.left + 'px';
+        this.tipDom.style.top = offset.top - 4 + 'px';
+
+       // this.replaceArrow(arrowDelta, $tip[0][arrowOffsetPosition], isVertical)
+
+    },
+    getCalculatedOffset: function(placement, pos, actualWidth, actualHeight){
+        return placement == 'bottom' ? {top: pos.top + pos.height, left: pos.left + pos.width / 2 - actualWidth / 2} :
+            placement == 'top' ? {top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2} :
+                placement == 'left' ? {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth} :
+                    /* placement == 'right' */ {
+                    top: pos.top + pos.height / 2 - actualHeight / 2,
+                    left: pos.left + pos.width
+                }
+    },
+    getPosition: function(el){
+        el = el || this.element;
+        var isBody = el.tagName == 'BODY';
+        var elRect = el.getBoundingClientRect()
+        if (elRect.width == null) {
+            // width and height are missing in IE8, so compute them manually; see https://github.com/twbs/bootstrap/issues/14093
+            elRect = u.extend({}, elRect, {width: elRect.right - elRect.left, height: elRect.bottom - elRect.top})
+        }
+        var elOffset = isBody ? {top: 0, left: 0} : {top:el.offsetTop, left: el.offsetLeft};
+        var scroll = {scroll: isBody ? document.documentElement.scrollTop || document.body.scrollTop : el.scrollTop}
+        var outerDims = isBody ? {width: window.innerWidth || document.body.clientWidth, height: window.innerHeight || document.body.clientHeight} : null
+		//return u.extend({}, elRect, scroll, outerDims, elOffset)
+        return u.extend({}, elRect, scroll, outerDims)
+
+    },
+    getViewportAdjustedDelta: function(placement, pos, actualWidth, actualHeight){
+        var delta = {top: 0, left: 0}
+        if (!this._viewport) return delta
+
+        var viewportPadding = this.options.viewport && this.options.viewport.padding || 0
+        var viewportDimensions = this.getPosition(this._viewport)
+
+        if (/right|left/.test(placement)) {
+            var topEdgeOffset = pos.top - viewportPadding - viewportDimensions.scroll
+            var bottomEdgeOffset = pos.top + viewportPadding - viewportDimensions.scroll + actualHeight
+            if (topEdgeOffset < viewportDimensions.top) { // top overflow
+                delta.top = viewportDimensions.top - topEdgeOffset
+            } else if (bottomEdgeOffset > viewportDimensions.top + viewportDimensions.height) { // bottom overflow
+                delta.top = viewportDimensions.top + viewportDimensions.height - bottomEdgeOffset
+            }
+        } else {
+            var leftEdgeOffset = pos.left - viewportPadding
+            var rightEdgeOffset = pos.left + viewportPadding + actualWidth
+            if (leftEdgeOffset < viewportDimensions.left) { // left overflow
+                delta.left = viewportDimensions.left - leftEdgeOffset
+            } else if (rightEdgeOffset > viewportDimensions.width) { // right overflow
+                delta.left = viewportDimensions.left + viewportDimensions.width - rightEdgeOffset
+            }
+        }
+
+        return delta
+    },
+    replaceArrow: function(delta, dimension, isHorizontal){
+        if (isHorizontal){
+            this.arrow.style.left = 50 * (1 - delta / dimension) + '%';
+            this.arrow.style.top = '';
+        }else{
+            this.arrow.style.top = 50 * (1 - delta / dimension) + '%';
+            this.arrow.style.left = '';
+        }
+    },
+    destory: function(){
+
+    },
+    setTitle :function(title){
+        this.options.title = title;
+    }
+
+};
 
   var URipple = function URipple(element) {
     if (u.isIE8) return;
@@ -6121,3 +7290,494 @@ u.compMgr.regComp({
 
 
 
+
+	u.Validate = u.BaseComponent.extend({
+		
+		init : function() {
+			var self = this
+			this.$element =this.element			
+			this.$form = this.form
+			this.options = u.extend({}, this.DEFAULTS, this.options);
+			this.required = false
+			this.timeout = null
+			//所有属性优先级 ：  options参数  > attr属性  > 默认值
+			this.required = this.options['required']  ? this.options['required']  : false
+			this.validType = this.options['validType'] ? this.options['validType'] : null
+			//校验模式  blur  submit
+			this.validMode = this.options['validMode'] ? this.options['validMode'] : u.Validate.DEFAULTS.validMode
+			//空提示
+			this.nullMsg = this.options['nullMsg'] ? this.options['nullMsg'] : u.Validate.NULLMSG[this.validType]
+			//是否必填
+			if (this.required && !this.nullMsg)
+				this.nullMsg = u.Validate.NULLMSG['required']
+			//错误必填
+			this.errorMsg = this.options['errorMsg'] ? this.options['errorMsg'] : u.Validate.ERRORMSG[this.validType]
+			//正则校验
+			this.regExp = this.options['reg'] ? this.options['reg']: u.Validate.REG[this.validType]
+			try{
+				if(typeof this.regExp == 'string')
+					this.regExp = eval(this.regExp)
+			}catch(e){
+
+			}
+			
+			this.notipFlag=this.options['notipFlag'];// 错误信息提示方式是否为tip，默认为true
+			this.hasSuccess=this.options['hasSuccess'];//是否含有正确提示
+			
+			//提示div的id 为空时使用tooltop来提示
+			this.tipId = this.options['tipId'] ? this.options['tipId'] : null
+			//校验成功提示信息的div
+			this.successId=this.options['successId'] ? this.options['successId'] : null;
+			
+			// 要求显示成功提示，并没有成功提示dom的id时，则创建成功提示dom
+			if(this.hasSuccess&&!this.successId){
+				this.successId=u.makeDOM('<span class="u-form-control-success fa fa-check-circle" ></span>');
+				
+				if(this.$element.nextSibling){
+					this.$element.parentNode.insertBefore(this.successId,this.$element.nextSibling);
+				}else{
+					this.$element.parentNode.appendChild(this.successId);
+				}
+
+			}
+			//不是默认的tip提示方式并且tipId没有定义时创建默认tipid	
+			if(this.notipFlag&&!this.tipId){
+				this.tipId=u.makeDOM('<span class="u-form-control-info fa fa-exclamation-circle "></span>');
+				this.$element.parentNode.appendChild(this.tipId);
+
+				if(this.$element.nextSibling){
+					this.$element.parentNode.insertBefore(this.tipId,this.$element.nextSibling);
+				}else{
+					this.$element.parentNode.appendChild(this.tipId);
+				}
+			}
+			//提示框位置
+			this.placement = this.options['placement'] ? this.options['placement'] : u.Validate.DEFAULTS.placement
+			//
+			this.minLength = this.options['minLength'] > 0 ? this.options['minLength'] : null
+			this.maxLength = this.options['maxLength'] > 0 ? this.options['maxLength'] : null
+			this.min = this.options['min'] !== undefined  ? this.options['min'] : null
+			this.max = this.options['max'] !== undefined ? this.options['max'] : null
+			this.minNotEq = this.options['minNotEq'] !== undefined ? this.options['minNotEq'] : null
+			this.maxNotEq = this.options['maxNotEq'] !== undefined ? this.options['maxNotEq'] : null
+			this.min = u.isNumber(this.min) ? this.min : null
+			this.max = u.isNumber(this.max) ? this.max : null
+			this.minNotEq = u.isNumber(this.minNotEq) ? this.minNotEq : null
+			this.maxNotEq = u.isNumber(this.maxNotEq) ? this.maxNotEq : null
+			this.create()
+		}
+	});
+		
+	
+	
+
+	
+	u.Validate.fn = u.Validate.prototype
+	//u.Validate.tipTemplate = '<div class="tooltip" role="tooltip"><div class="tooltip-arrow tooltip-arrow-c"></div><div class="tooltip-arrow"></div><div class="tooltip-inner" style="color:#ed7103;border:1px solid #ed7103;background-color:#fff7f0;"></div></div>'
+	
+	u.Validate.DEFAULTS = {
+			validMode: 'blur',
+			placement: "top"
+		}
+	
+	u.Validate.NULLMSG = {
+		"required": trans('validate.required', "不能为空！"),
+		"integer": trans('validate.integer', "请填写整数！"),
+		"float": trans('validate.float', "请填写数字！"),
+		"zipCode": trans('validate.zipCode', "请填写邮政编码！"),
+		"phone": trans('validate.phone', "请填写手机号码！"),
+		"landline": trans('validate.landline', "请填写座机号码！"),
+		"email": trans('validate.email', "请填写邮箱地址！"),
+		"url": trans('validate.url', "请填写网址！"),
+		"datetime": trans('validate.datetime', "请填写日期！")
+
+	}
+
+	u.Validate.ERRORMSG = {
+		"integer": trans('validate.error_integer', "整数格式不对！"),
+		"float": trans('validate.error_float', "数字格式不对！"),
+		"zipCode": trans('validate.error_zipCode', "邮政编码格式不对！"),
+		"phone": trans('validate.error_phone', "手机号码格式不对！"),
+		"landline": trans('validate.error_landline', "座机号码格式不对！"),
+		"email": trans('validate.error_email', "邮箱地址格式不对！"),
+		"url": trans('validate.error_url', "网址格式不对！"),
+		"datetime": trans('validate.error_datetime', "日期格式不对！")
+	}
+
+	u.Validate.REG = {
+		"integer": /^-?\d+$/,
+		"float": /^-?\d+(\.\d+)?$/,
+		"zipCode": /^[0-9]{6}$/,
+		"phone": /^13[0-9]{9}$|14[0-9]{9}|15[0-9]{9}$|18[0-9]{9}$/,
+		"landline": /^(0[0-9]{2,3}\-)?([2-9][0-9]{6,7})+(\-[0-9]{1,4})?$/,
+		"email": /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
+		"url": /^(\w+:\/\/)?\w+(\.\w+)+.*$/,
+		"datetime": /^(?:19|20)[0-9][0-9]-(?:(?:0[1-9])|(?:1[0-2]))-(?:(?:[0-2][1-9])|(?:[1-3][0-1])) (?:(?:[0-2][0-3])|(?:[0-1][0-9])):[0-5][0-9]:[0-5][0-9]$/
+	}
+
+	
+
+	
+
+	u.Validate.fn.create = function() {
+		var self = this
+		u.on(this.element,'blur', function(e) {
+			if (self.validMode == 'blur'){
+				self.passed = self.doValid()
+				
+			}
+		})
+		u.on(this.element,'focus', function(e) {
+			//隐藏错误信息
+			self.hideMsg()
+		})
+		u.on(this.element,'change', function(e) {
+			//隐藏错误信息
+			self.hideMsg()
+		})	
+		u.on(this.element,'keydown', function(e) {
+			var event = window.event || e;
+			if(self["validType"] == "float"){
+				var tmp = self.element.value;
+				if(event.shiftKey){
+					event.returnValue=false;
+					return false;
+				}else if(event.keyCode == 9 || event.keyCode == 37 || event.keyCode == 39 || event.keyCode == 46) {
+					// tab键 左箭头 右箭头 delete键
+					return true;
+				}else if(event.ctrlKey && (event.keyCode == 67 || event.keyCode == 86)){
+					//复制粘贴
+					return true;
+				}else if(!((event.keyCode>=48&&event.keyCode<=57)||(event.keyCode>=96&&event.keyCode<=105)||(u.inArray(event.keyCode,[8,110,190,189,109]) > -1))){
+					event.returnValue=false;
+					return false;
+				}else if((!tmp || tmp.indexOf(".") > -1) && (event.keyCode == 190 || event.keyCode == 110 )){
+					event.returnValue=false;
+					return false;
+					
+				}
+
+				if(tmp && (tmp+'').split('.')[0].length >= 25) {
+					return false;
+					
+				}
+
+			}
+			if(self["validType"] == "integer"){
+				var tmp = self.element.value
+
+				 if(event.shiftKey){
+					event.returnValue=false;
+					return false;
+				}else if(event.keyCode == 9 || event.keyCode == 37 || event.keyCode == 39 || event.keyCode == 46) {
+					// tab键 左箭头 右箭头 delete键
+					return true;
+				}else if(event.ctrlKey && (event.keyCode == 67 || event.keyCode == 86)){
+					//复制粘贴
+					return true;
+				}else if(!((event.keyCode>=48&&event.keyCode<=57)||(event.keyCode>=96&&event.keyCode<=105)||(u.inArray(event.keyCode,[8,109,189]) > -1))){
+					event.returnValue=false;
+					return false;
+				}
+
+				if(tmp && (tmp+'').split('.')[0].length >= 25) {
+					return false;
+				}
+			}
+
+		})
+	}
+
+	u.Validate.fn.updateOptions = function(options){
+
+	}
+
+	u.Validate.fn.doValid = function(options) {
+		var self=this;
+		var pValue;
+		this.showMsgFlag = true;
+		if(options){
+			pValue = options.pValue;
+			this.showMsgFlag = options.showMsg;
+		}
+		this.needClean = false
+		if (this.element && this.element.getAttribute("readonly")) return true
+		var value = null
+		if (typeof pValue != 'undefined')
+			value = pValue
+		else if(this.element)
+			value = this.element.value
+
+
+		if (this.isEmpty(value) && this.required) {
+			this.showMsg(this.nullMsg)
+			return {passed:false,Msg:this.nullMsg}
+		} else if(this.isEmpty(value) && !this.required){
+			return {passed:true}
+		}
+		if (this.regExp) {
+			var reg = new RegExp(this.regExp);
+			if (typeof value == 'number')
+				value = value + ""
+			var r = value.match(reg);
+			if (r === null || r === false){
+				this.showMsg(this.errorMsg)
+				this.needClean = true
+				return {passed:false,Msg:this.errorMsg}
+			}
+		}
+		if (this.minLength){
+			if (value.lengthb() < this.minLength){
+				var Msg = "输入长度不能小于" + this.minLength + "位";
+				this.showMsg(Msg)
+				return {passed:false,Msg:Msg}
+			}
+		}
+		if (this.maxLength){
+			if (value.lengthb() > this.maxLength){
+				var Msg = "输入长度不能大于" + this.maxLength + "位";
+				this.showMsg(Msg)
+				return {passed:false,Msg:Msg}
+			}
+		}
+		if (this.max != undefined && this.max != null){
+			if (parseFloat(value) > this.max){
+				var Msg = "输入值不能大于" + this.max;
+				this.showMsg(Msg)
+				return {passed:false,Msg:Msg}
+			}
+		}
+		if(this.min != undefined && this.min != null){
+			if (parseFloat(value) < this.min){
+				var Msg = "输入值不能小于" + this.min;
+				this.showMsg(Msg)
+				return {passed:false,Msg:Msg}
+			}
+		}
+		if (this.maxNotEq != undefined && this.maxNotEq != null){
+			if (parseFloat(value) >= this.maxNotEq){
+				var Msg = "输入值不能大于或等于" + this.maxNotEq;
+				this.showMsg(Msg)
+				return {passed:false,Msg:Msg}
+			}
+		}
+		if(this.minNotEq != undefined && this.minNotEq != null){
+			if (parseFloat(value) <= this.minNotEq){
+				var Msg = "输入值不能小于或等于" + this.minNotEq;
+				this.showMsg(Msg)
+				return {passed:false,Msg:Msg}
+			}
+		}
+		//succes时，将成功信息显示
+		if(this.successId){
+			// u.addClass(this.element.parentNode,'u-has-success');
+			var successDiv=this.successId;
+			var successleft=this.$element.offsetLeft+this.$element.offsetWidth+5;
+			var successtop=this.$element.offsetTop+10;
+			if(typeof successDiv==='string')
+				successDiv = document.getElementById(successDiv);
+			successDiv.style.display='inline-block';
+			successDiv.style.top=successtop+'px';
+			successDiv.style.left=successleft+'px';
+			clearTimeout(this.timeout)
+			this.timeout = setTimeout(function(){
+				// self.tooltip.hide();
+				successDiv.style.display='none';
+			},3000)
+			
+		}
+		return {passed:true}
+	}
+	
+	u.Validate.fn.check = u.Validate.fn.doValid;
+
+//	Validate.fn.getValue = function() {
+//		var inputval
+//		if (this.$element.is(":radio")) {
+//			inputval = this.$form.find(":radio[name='" + this.$element.attr("name") + "']:checked").val();
+//		} else if (this.$element.is(":checkbox")) {
+//			inputval = "";
+//			this.$form.find(":checkbox[name='" + obj.attr("name") + "']:checked").each(function() {
+//				inputval += $(this).val() + ',';
+//			})
+//		} else if (this.$element.is('div')) {
+//			inputval = this.$element[0].trueValue;
+//		} else {
+//			inputval = this.$element.val();
+//		}
+//		inputval = $.trim(inputval);
+//		return this.isEmpty(inputval) ? "" : inputval;
+//	}
+
+    u.Validate.fn.some = Array.prototype.some ?
+		Array.prototype.some : function() {
+			var flag;
+			for (var i = 0; i < this.length; i++) {
+				if (typeof arguments[0] == "function") {
+					flag = arguments[0](this[i])
+					if (flag) break;
+				}
+			}
+			return flag;
+		};
+
+	u.Validate.fn.getValue = function() {
+		var inputval = '';
+		//checkbox、radio为u-meta绑定时
+		var bool = this.some.call(this.$element.querySelectorAll('[type="checkbox"],[type="radio"]'), function(ele) {
+			return ele.type == "checkbox" || ele.type == "radio"
+		});
+		if (this.$element.childNodes.length > 0 && bool) {
+			var eleArr = this.$element.querySelectorAll('[type="checkbox"],[type="radio"]')
+			var ele = eleArr[0]
+			if (ele.type == "checkbox") {
+				this.$element.querySelectorAll(":checkbox[name='" + $(ele).attr("name") + "']:checked").each(function() {
+					inputval += $(this).val() + ',';
+				})
+			} else if (ele.type == "radio") {
+				inputval = this.$element.querySelectorAll(":radio[name='" + $(ele).attr("name") + "']:checked").value;
+			}
+		} else if (this.$element.is(":radio")) { //valid-type 绑定
+			inputval = this.$element.parent().querySelectorAll(":radio[name='" + this.$element.attr("name") + "']:checked").val();
+		} else if (this.$element.is(":checkbox")) {
+			inputval = "";
+			this.$element.parent().find(":checkbox[name='" + this.$element.attr("name") + "']:checked").each(function() {
+				inputval += $(this).val() + ',';
+			})
+		} else if (this.$element.find('input').length > 0){
+			inputval = this.$element.find('input').val()
+		}else {
+			inputval = this.$element.val();
+		}
+		inputval = inputval.trim;
+		return this.isEmpty(inputval) ? "" : inputval;
+	}
+
+	u.Validate.fn.isEmpty = function(val) {
+		return val === "" || val === undefined || val === null //|| val === $.trim(this.$element.attr("tip"));
+	}
+
+	u.Validate.fn.showMsg = function(msg) {
+		
+
+		if(this.showMsgFlag == false || this.showMsgFlag == 'false'){
+			return;
+		}
+		var self = this
+		if (this.tipId) {
+			this.$element.style.borderColor='rgb(241,90,74)';
+			var tipdiv=this.tipId;
+			var left=this.$element.offsetLeft;
+			var top=this.$element.offsetTop+this.$element.offsetHeight+4;
+			if(typeof tipdiv==='string'){
+				tipdiv = document.getElementById(tipdiv);
+			}
+			tipdiv.innerHTML = msg;
+			tipdiv.style.left=left+'px';
+			tipdiv.style.top=top+'px';
+			tipdiv.style.display = 'block';
+			// u.addClass(tipdiv.parentNode,'u-has-error');
+			// $('#' + this.tipId).html(msg).show()
+		} else {
+			var tipOptions = {
+				"title": msg,
+				"trigger": "manual",
+				"selector": "validtip",
+				"placement": this.placement,
+				"container":"body"
+			}
+			if (this.options.tipTemplate)
+				tipOptions.template = this.options.tipTemplate
+			if(!this.tooltip)
+				this.tooltip = new u.Tooltip(this.element,tipOptions)
+			this.tooltip.setTitle(msg);
+			this.tooltip.show();
+			
+		}
+		clearTimeout(this.timeout)
+		this.timeout = setTimeout(function(){
+			// self.tooltip.hide();
+			self.hideMsg();
+		},3000)
+	}
+	u.Validate.fn.hideMsg = function() {
+		//隐藏成功信息
+		// if(this.successId||this.tipId){
+		// 	document.getElementById(this.successId).style.display='none';
+		// 	document.getElementById(this.tipId).style.display='none';
+		// }
+		
+		// u.removeClass(this.element.parentNode,'u-has-error');
+		// u.removeClass(this.element.parentNode,'u-has-success');
+		
+
+		if (this.tipId) {
+			var tipdiv =this.tipId;
+			if(typeof tipdiv==='string' ){
+				tipdiv = document.getElementById(tipdiv);
+			}
+			tipdiv.style.display='none';
+			this.$element.style.borderColor='';
+			// u.removeClass(tipdiv.parentNode,'u-has-error');
+		} else {
+			if(this.tooltip)
+			this.tooltip.hide()
+		}
+			
+	}
+
+	/**
+	 * 只有单一元素时使用
+	 */
+	u.Validate.fn._needClean = function(){
+		return true;//this.validates[0].needClean
+	}
+
+	u.validate=function(element){
+        var self = this,options,childEle;
+        if(typeof element==='string'){
+            element=document.querySelector(element);
+        }
+        //element本身需要校验
+        if(element.attributes["validate"]){
+        	options=element.attributes["validate"]?JSON.parse(element.attributes["validate"].value):{};
+            options=u.extend({el:element},options);
+            element['u.Validate']=new u.Validate(options);
+        }
+
+        //element是个父元素，校验子元素
+        childEle=element.querySelectorAll('[validate]');
+        u.each(childEle,function(i,child){
+           if(!child['u.Validate']){//如果该元素上没有校验
+            options=child.attributes["validate"]?JSON.parse(child.attributes["validate"].value):{};
+            options=u.extend({el:child},options);
+            child['u.Validate']=new u.Validate(options);
+           }
+        });
+    }
+
+    // 对某个dom容器内的元素进行校验
+    u.doValidate=function (element){
+        var passed=true,childEle,result;
+        if(typeof element==='string'){
+            element=document.querySelector(element);
+        }
+        childEle=element.querySelectorAll('input');
+        u.each(childEle,function(i,child){
+           if(child['u.Validate']&&child['u.Validate'].check){
+            result = child['u.Validate'].check({trueValue:true,showMsg:true});
+            if (typeof result === 'object')
+                passed = result['passed']  && passed
+            else
+                passed = result && passed
+           }
+        });
+       return passed;
+    }
+	if (u.compMgr)   
+	u.compMgr.regComp({
+		comp: u.Validate,
+		compAsString: 'u.Validate',
+		css: 'u-validate'
+	})
+	

@@ -48,31 +48,31 @@ gulp.task('Js', function() {
 	
     return gulp.src(globs.js.uiJs)
       .pipe(concat('date.js'))
-      .pipe(gulp.dest('dist/js'))
+      .pipe(gulp.dest('examples/dist/js'))
       .pipe(uglify())
       .on('error',errHandle)
       .pipe(rename('date.min.js'))
-      .pipe(gulp.dest('dist/js'));
+      .pipe(gulp.dest('examples/dist/js'));
 });
 
 gulp.task('uJs',['Js'], function() {
     return gulp.src(globs.js.dtJs)
       .pipe(concat('u-date.js'))
-      .pipe(gulp.dest('dist/js'))
+      .pipe(gulp.dest('examples/dist/js'))
       .pipe(uglify())
       .on('error',errHandle)
       .pipe(rename('u-date.min.js'))
-      .pipe(gulp.dest('dist/js/'));
+      .pipe(gulp.dest('examples/dist/js/'));
       
 });
 
 gulp.task('css', function() {
     return gulp.src(globs.sass)
       .pipe(sass().on('error',errHandle))
-      .pipe(gulp.dest('dist/css'))
+      .pipe(gulp.dest('examples/dist/css'))
       .pipe(minifycss())
       .pipe(rename('date.min.css'))
-      .pipe(gulp.dest('dist/css'));
+      .pipe(gulp.dest('examples/dist/css'));
 });
 
 
