@@ -1,6 +1,6 @@
 {
   "name": "datetimepicker",
-  "version": "1.0.0",
+  "version": "3.0.1",
   "description": "dateTime",
   "main": "gulpfile.js",
   "directories": {
