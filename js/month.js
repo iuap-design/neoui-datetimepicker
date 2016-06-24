@@ -164,7 +164,13 @@ u.Month.fn.show = function(evt) {
             panel:this.panelDiv,
             position:"bottomLeft"
         });
-	        
+    document.body.onscroll = function(){
+        u.showPanelByEle({
+            ele:oThis.input,
+            panel:oThis.panelDiv,
+            position:"bottomLeft"
+        });
+    }
 	this.panelDiv.style.width = 152 + 'px';
 	this.panelDiv.style.zIndex = u.getZIndex();
     u.addClass(this.panelDiv, 'is-visible');

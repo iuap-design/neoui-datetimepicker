@@ -341,7 +341,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 		this.currentView = 'hours';
 		this.titleHourSpan.innerHTML = this.hours;
 		this.titleMinSpan.innerHTML = this.min;
-		this.setHand();
+		
 		/*因为元素可能变化位置，所以显示的时候需要重新计算*/
 		if(u.isMobile){
 			this.panelDiv.style.position = 'fixed';
@@ -359,12 +359,19 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 	            panel:this.panelDiv,
 	            position:"bottomLeft"
 	        });
+		    document.body.onscroll = function(){
+		        u.showPanelByEle({
+		            ele:self.input,
+		            panel:self.panelDiv,
+		            position:"bottomLeft"
+		        });
+		    }  
         }
         
 		this.panelDiv.style.zIndex = u.getZIndex();
         u.addClass(this.panelDiv, 'is-visible');
         
-   
+   		this.setHand();
         
         var callback = function (e) {
             if (e !== evt && e.target !== this.input && !self.clickPanel(e.target)) {
