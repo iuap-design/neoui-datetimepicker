@@ -144,8 +144,14 @@ u.Time = u.BaseComponent.extend({
         });
 		this.panelDiv.style.zIndex = u.getZIndex();
         u.addClass(this.panelDiv, 'is-visible');
-        
-   
+
+        document.body.onscroll = function(){
+            u.showPanelByEle({
+                ele:oThis.input,
+                panel:oThis.panelDiv,
+                position:"bottomLeft"
+            });
+        }
         
         var callback = function (e) {
             if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target)) {

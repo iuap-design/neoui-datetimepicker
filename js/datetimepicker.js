@@ -574,7 +574,7 @@ u.DateTimePicker.fn._fillTime = function(type){
         // dateDiv.appendChild(cell);
         // tempDate = u.date.add(tempDate, 'd', 1);
     // }
-    if(u.isIE8){ // IE8保持原来，非IE8使用clockpicker
+    if(u.isIE8){ // IE8/IE9保持原来，非IE8/IE9使用clockpicker
         timetemplate = ['<div class="u_time_box">',
                             '<div class="u_time_cell">',
                                 //'<div class="add_hour_cell"><i class="add_hour_cell icon-angle-up"></i></div>',
@@ -768,7 +768,7 @@ u.DateTimePicker.fn._fillTime = function(type){
         this.sec = u.date._formats['ss'](tempDate);
         //this.titleHourSpan.innerHTML = this.hours;
         //this.titleMinSpan.innerHTML = this.min;
-        this.setHand();
+        
 
 
         u.on(this.hourDiv,'click',function(e){
@@ -808,6 +808,8 @@ u.DateTimePicker.fn._fillTime = function(type){
     }
     
     this._zoomIn(timePage);
+    if(!u.isIE8)
+        this.setHand();
     this.currentPanel = 'time';
     dateDiv.onselectstart=new Function("return false");
 
@@ -992,7 +994,7 @@ u.dateTimePickerTemplateArr = ['<div class="u-date-panel">',
 
 u.DateTimePicker.fn.show = function(evt){
     if(!this.enable){
-        returm;
+        return;
     }
     var inputValue = this._input.value;
     this.setDate(inputValue);
@@ -1102,16 +1104,25 @@ u.DateTimePicker.fn.show = function(evt){
         });
         this._panel.style.marginLeft = '0px';
         var callback = function (e) {
-            if (e !== evt && e.target !== self._input && u.closest(e.target,'u-date-panel') !== self._panel && self._inputFocus != true) {
+            if (e !== evt && e.target !== self._input && !u.hasClass(e.target,'u-date-content-year-cell')  && !u.hasClass(e.target,'u-date-content-year-cell') &&u.closest(e.target,'u-date-panel') !== self._panel && self._inputFocus != true) {
                 u.off(document,'click', callback);
                 self.onCancel();
             }
         };
         u.on(document,'click', callback);
+
+        document.body.onscroll = function(){
+            u.showPanelByEle({
+                ele:self._input,
+                panel:self._panel,
+                position:"bottomLeft"
+            });
+        }
     }
     
     this.isShow = true;
 };
+
 
 /**
  * 确定事件
