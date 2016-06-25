@@ -144,8 +144,14 @@ u.Time = u.BaseComponent.extend({
         });
 		this.panelDiv.style.zIndex = u.getZIndex();
         u.addClass(this.panelDiv, 'is-visible');
-        
-   
+
+        document.body.onscroll = function(){
+            u.showPanelByEle({
+                ele:oThis.input,
+                panel:oThis.panelDiv,
+                position:"bottomLeft"
+            });
+        }
         
         var callback = function (e) {
             if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target)) {
@@ -537,7 +543,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 		this.currentView = 'hours';
 		this.titleHourSpan.innerHTML = this.hours;
 		this.titleMinSpan.innerHTML = this.min;
-		this.setHand();
+		
 		/*因为元素可能变化位置，所以显示的时候需要重新计算*/
 		if(u.isMobile){
 			this.panelDiv.style.position = 'fixed';
@@ -555,12 +561,19 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 	            panel:this.panelDiv,
 	            position:"bottomLeft"
 	        });
+		    document.body.onscroll = function(){
+		        u.showPanelByEle({
+		            ele:self.input,
+		            panel:self.panelDiv,
+		            position:"bottomLeft"
+		        });
+		    }  
         }
         
 		this.panelDiv.style.zIndex = u.getZIndex();
         u.addClass(this.panelDiv, 'is-visible');
         
-   
+   		this.setHand();
         
         var callback = function (e) {
             if (e !== evt && e.target !== this.input && !self.clickPanel(e.target)) {
@@ -1185,7 +1198,7 @@ u.DateTimePicker.fn._fillTime = function(type){
         // dateDiv.appendChild(cell);
         // tempDate = u.date.add(tempDate, 'd', 1);
     // }
-    if(u.isIE8){ // IE8保持原来，非IE8使用clockpicker
+    if(u.isIE8){ // IE8/IE9保持原来，非IE8/IE9使用clockpicker
         timetemplate = ['<div class="u_time_box">',
                             '<div class="u_time_cell">',
                                 //'<div class="add_hour_cell"><i class="add_hour_cell icon-angle-up"></i></div>',
@@ -1379,7 +1392,7 @@ u.DateTimePicker.fn._fillTime = function(type){
         this.sec = u.date._formats['ss'](tempDate);
         //this.titleHourSpan.innerHTML = this.hours;
         //this.titleMinSpan.innerHTML = this.min;
-        this.setHand();
+        
 
 
         u.on(this.hourDiv,'click',function(e){
@@ -1419,6 +1432,8 @@ u.DateTimePicker.fn._fillTime = function(type){
     }
     
     this._zoomIn(timePage);
+    if(!u.isIE8)
+        this.setHand();
     this.currentPanel = 'time';
     dateDiv.onselectstart=new Function("return false");
 
@@ -1603,7 +1618,7 @@ u.dateTimePickerTemplateArr = ['<div class="u-date-panel">',
 
 u.DateTimePicker.fn.show = function(evt){
     if(!this.enable){
-        returm;
+        return;
     }
     var inputValue = this._input.value;
     this.setDate(inputValue);
@@ -1713,16 +1728,25 @@ u.DateTimePicker.fn.show = function(evt){
         });
         this._panel.style.marginLeft = '0px';
         var callback = function (e) {
-            if (e !== evt && e.target !== self._input && u.closest(e.target,'u-date-panel') !== self._panel && self._inputFocus != true) {
+            if (e !== evt && e.target !== self._input && !u.hasClass(e.target,'u-date-content-year-cell')  && !u.hasClass(e.target,'u-date-content-year-cell') &&u.closest(e.target,'u-date-panel') !== self._panel && self._inputFocus != true) {
                 u.off(document,'click', callback);
                 self.onCancel();
             }
         };
         u.on(document,'click', callback);
+
+        document.body.onscroll = function(){
+            u.showPanelByEle({
+                ele:self._input,
+                panel:self._panel,
+                position:"bottomLeft"
+            });
+        }
     }
     
     this.isShow = true;
 };
+
 
 /**
  * 确定事件
@@ -2204,6 +2228,13 @@ u.Year.fn.show = function(evt) {
             panel:this.panelDiv,
             position:"bottomLeft"
         });
+    document.body.onscroll = function(){
+        u.showPanelByEle({
+            ele:oThis.input,
+            panel:oThis.panelDiv,
+            position:"bottomLeft"
+        });
+    }
 	this.panelDiv.style.zIndex = u.getZIndex();
     u.addClass(this.panelDiv, 'is-visible');
         
@@ -2409,7 +2440,13 @@ u.Month.fn.show = function(evt) {
             panel:this.panelDiv,
             position:"bottomLeft"
         });
-	        
+    document.body.onscroll = function(){
+        u.showPanelByEle({
+            ele:oThis.input,
+            panel:oThis.panelDiv,
+            position:"bottomLeft"
+        });
+    }
 	this.panelDiv.style.width = 152 + 'px';
 	this.panelDiv.style.zIndex = u.getZIndex();
     u.addClass(this.panelDiv, 'is-visible');
@@ -2708,6 +2745,14 @@ u.YearMonth.fn.show = function(evt) {
             panel:this.panelDiv,
             position:"bottomLeft"
         });
+
+     document.body.onscroll = function(){
+        u.showPanelByEle({
+            ele:oThis.input,
+            panel:oThis.panelDiv,
+            position:"bottomLeft"
+        });
+    }
 	this.panelDiv.style.zIndex = u.getZIndex();
     u.addClass(this.panelDiv, 'is-visible');
     var oThis = this;
