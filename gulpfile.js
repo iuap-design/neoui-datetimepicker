@@ -26,12 +26,12 @@ function errHandle(err) {
 var globs={
 	js : {
 		uiJs : [
+      'js/datetimepicker.js',
       'js/time.js',
-      'js/clockpicker.js',
-			'js/datetimepicker.js',
-			'js/year.js',
+      'js/yearmonth.js',
+      'js/year.js',
       'js/month.js',
-			'js/yearmonth.js'
+      'js/clockpicker.js'
 		]
 	},
 	sass : 'css/date.scss'
