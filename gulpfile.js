@@ -11,54 +11,68 @@ var util = require('gulp-util');
 /**
  * 公共错误处理函数
  * 使用示例：
- *  .pipe(uglify())
- .on('error', errHandle)
- .pipe(rename('u.min.js'))
+ *  .pipe(uglify().on('error', errHandle))
+    .pipe(rename('u.min.js'))
  * @param  {[type]} err [description]
  * @return {[type]}     [description]
  */
-function errHandle(err) {
-    util.log(err.fileName + '文件编译出错，出错行数为' + err.lineNumber + '，具体错误信息为：' + err.message);
+var errHandle = function ( err ) {
+    // 报错文件名
+    var fileName = err.fileName;
+    // 报错类型
+    var name = err.name;
+    // 报错信息
+    var message = err.message;
+    // 出错代码位置
+    var loc = err.loc;
+
+    var logInfo = '报错文件：' + fileName + '报错类型：' + name + '出错代码位置：' + loc.line + ',' + loc.column;
+
+    util.log( logInfo );
+
     this.end();
-};
+}
 
 
 var globs={
-	js : {
-		uiJs : [
-      'js/datetimepicker.js',
-      'js/time.js',
-      'js/yearmonth.js',
-      'js/year.js',
-      'js/month.js',
-      'js/clockpicker.js'
-		]
-	},
+	js :[
+        'js/datetimepicker.js',
+        'js/time.js',
+        'js/yearmonth.js',
+        'js/year.js',
+        'js/month.js',
+        'js/clockpicker.js'
+	],
 	sass : 'css/date.scss'
 }
 
-gulp.task('Js', function() {
+gulp.task('js', function() {
 	
-    return gulp.src(globs.js.uiJs)
-      .pipe(concat('u-date.js'))
-      .pipe(gulp.dest('dist/js'))
-      .pipe(uglify())
-      .on('error',errHandle)
-      .pipe(rename('u-date.min.js'))
-      .pipe(gulp.dest('dist/js'));
+    return gulp.src(globs.js)
+        .pipe(concat('u-date.js'))
+        .pipe(gulp.dest('dist/js'))
+        .pipe(uglify().on('error',errHandle))
+        .pipe(rename('u-date.min.js'))
+        .pipe(gulp.dest('dist/js'));
 });
 
 
 gulp.task('css', function() {
     return gulp.src(globs.sass)
-      .pipe(sass().on('error',errHandle))
-      .pipe(gulp.dest('dist/css'))
-      .pipe(minifycss())
-      .pipe(rename('date.min.css'))
-      .pipe(gulp.dest('dist/css'));
+        .pipe(sass().on('error',errHandle))
+        .pipe(rename('u-date.css'))
+        .pipe(gulp.dest('dist/css'))
+        .pipe(minifycss())
+        .pipe(rename('u-date.min.css'))
+        .pipe(gulp.dest('dist/css'));
 });
 
+gulp.task('distWatch',function(){
+    gulp.watch(globs.js,['js']);
+    gulp.watch(globs.css,['css'])
+})
 
-gulp.task('default',['Js','css'], function() {
 
+gulp.task('dist',['js','css'], function() {
+    gulp.run('distWatch');
 });
