@@ -339,7 +339,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 			var target = e.target;
 			if(u.hasClass(target,'clockpicker-tick')){
 				this.hours = target.innerHTML;
-				this.hours = this.hours > 9 || this.hours == 00? '' + this.hours:'0' + this.hours;
+				this.hours = this.hours > 9 || this.hours == 0? '' + this.hours:'0' + this.hours;
 				this.titleHourSpan.innerHTML = this.hours;
 				this.hourDiv.style.visibility = 'hidden';
 				// this.minDiv.style.visibility = 'visible';
