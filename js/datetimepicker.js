@@ -21,11 +21,15 @@ u.DateTimePicker.fn.init = function(){
     this._input = this._element.querySelector("input");
     
     if(u.isMobile){
-        this._input.setAttribute('readonly', 'readonly');
+        // setTimeout(function(){
+        //     self._input.setAttribute('readonly','readonly');
+        // },1000);
     }
+
     setTimeout(function(){
-        self._input.setAttribute('readonly', 'readonly'); // 暂时不支持输入
-    })
+        self._input.setAttribute('readonly','readonly');
+    },1000);
+   
     u.on(this._input, 'focus', function(e){
         // 用来关闭键盘
         if(u.isMobile)
@@ -42,9 +46,10 @@ u.DateTimePicker.fn.init = function(){
     this._span = this._element.querySelector("span");
     if (this._span){
         u.on(this._span, 'click', function(e){
-            if (self.isShow !== true){
-                self.show(e);
-            }
+            // if (self.isShow !== true){
+            //     self.show(e);
+            // }
+            self._input.focus();
             u.stopEvent(e);
         });
     }
