@@ -1,3 +1,10 @@
+/** 
+ * datetimepicker v3.0.1
+ * dateTime
+ * author : Yonyou FED
+ * homepage : https://github.com/iuap-design/datetimepicker#readme
+ * bugs : https://github.com/iuap-design/datetimepicker/issues
+ **/ 
 u.DateTimePicker = u.BaseComponent.extend({
 
 

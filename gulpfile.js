@@ -7,7 +7,7 @@ var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var minifycss = require('gulp-minify-css');
 var util = require('gulp-util');
-
+var makeumd = require('./makeumd.js');
 /**
  * 公共错误处理函数
  * 使用示例：
@@ -46,7 +46,7 @@ var globs={
 	sass : 'css/date.scss'
 }
 
-gulp.task('js', function() {
+gulp.task('js-init', function() {
 	
     return gulp.src(globs.js)
         .pipe(concat('u-date.js'))
@@ -56,8 +56,14 @@ gulp.task('js', function() {
         .pipe(gulp.dest('dist/js'));
 });
 
+gulp.task('js', ['js-init'], function(){
+     makeumd.init([
+            'dist/js/u-date.js',
+            'dist/js/u-date.min.js',
+        ]);
+})
 
-gulp.task('css', function() {
+gulp.task('css-init', function() {
     return gulp.src(globs.sass)
         .pipe(sass().on('error',errHandle))
         .pipe(rename('u-date.css'))
@@ -67,12 +73,22 @@ gulp.task('css', function() {
         .pipe(gulp.dest('dist/css'));
 });
 
-gulp.task('distWatch',function(){
+gulp.task('css', ['css-init'], function(){
+     makeumd.init([
+            'dist/css/u-date.css',
+            'dist/css/u-date.min.css',
+        ]);
+})
+
+gulp.task('distWatch', function(){
     gulp.watch(globs.js,['js']);
     gulp.watch(globs.css,['css'])
 })
 
 
-gulp.task('dist',['js','css'], function() {
+gulp.task('dev', ['js','css'],function(){
     gulp.run('distWatch');
+})
+
+gulp.task('dist', ['js','css'], function() {
 });
