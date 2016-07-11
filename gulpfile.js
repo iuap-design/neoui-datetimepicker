@@ -41,7 +41,8 @@ var globs={
         'js/yearmonth.js',
         'js/year.js',
         'js/month.js',
-        'js/clockpicker.js'
+        'js/clockpicker.js',
+        'js/mobiscroll.2.13.2.js'
 	],
 	sass : 'css/date.scss'
 }
