@@ -70,6 +70,7 @@ u.ClockPicker = u.BaseComponent.extend({
 			this.template += '	</div><span class="clockpicker-am-pm-block"></span></div>';
 			this.template += '	</div>';
 	        u.on(this.input, 'blur',function(e){
+	        	self._inputFocus = false;
 	        	this.setValue(this.input.value);
 	        }.bind(this));
 			
@@ -301,9 +302,9 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 	
 	u.ClockPicker.fn.focusEvent = function() {
 		var self = this;
-		u.on(this.element,'click', function(e) {
+		u.on(this.input,'focus', function(e) {
+			self._inputFocus = true;
 			self.show(e);
-
 			if (e.stopPropagation) {
 				e.stopPropagation();
 			} else {
@@ -318,6 +319,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 		var self = this;		
 		var caret = this.element.nextSibling
 		u.on(caret,'click',function(e) {
+			self._inputFocus = true;
 			self.show(e);
 			if (e.stopPropagation) {
 				e.stopPropagation();
@@ -374,7 +376,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
    		this.setHand();
         
         var callback = function (e) {
-            if (e !== evt && e.target !== this.input && !self.clickPanel(e.target)) {
+            if (e !== evt && e.target !== this.input && !self.clickPanel(e.target) && self._inputFocus != true) {
             	u.off(document,'click', callback);
                 this.hide();
             }
