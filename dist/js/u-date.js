@@ -2745,7 +2745,8 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 	            panel:this.panelDiv,
 	            position:"bottomLeft"
 	        });
-		    document.body.onscroll = function(){
+		    // document.body.onscroll = function(){
+		    window.onscroll = function(){
 		        u.showPanelByEle({
 		            ele:self.input,
 		            panel:self.panelDiv,
