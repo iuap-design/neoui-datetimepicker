@@ -1589,6 +1589,7 @@ u.Time = u.BaseComponent.extend({
 			this.width = 300;
 		
 		this.panelDiv.style.width = this.width + 'px';
+		this.panelDiv.style.maxWidth = this.width + 'px';
 		if(this.options.showFix){
     		this.panelDiv.style.position = 'fixed';
     		u.showPanelByEle({
