@@ -168,7 +168,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 			this.hide();
 		}.bind(this));
 		
-		document.body.appendChild(this.panelDiv);
+		this.element.parentNode.appendChild(this.panelDiv);
 	}
 	
 	u.ClockPicker.fn.setHand = function(){
@@ -356,21 +356,22 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 		       self.hide();
 		    })
         }else{
-	        u.showPanelByEle({
-	            ele:this.input,
-	            panel:this.panelDiv,
-	            position:"bottomLeft"
-	        });
-		    // document.body.onscroll = function(){
-		    window.onscroll = function(){
-		        u.showPanelByEle({
-		            ele:self.input,
-		            panel:self.panelDiv,
+        	if(this.options.showFix){
+        		this.panelDiv.style.position = 'fixed';
+        		u.showPanelByEle({
+		            ele:this.input,
+		            panel:this.panelDiv,
 		            position:"bottomLeft"
 		        });
-		    }  
+        	}else{
+        		this.left = this.element.offsetLeft;
+		        var inputHeight = this.element.offsetHeight;
+		        this.top = this.element.offsetTop + inputHeight;
+		        this.panelDiv.style.left = this.left + 'px';
+				this.panelDiv.style.top = this.top + 'px';
+        	}
         }
-        
+
 		this.panelDiv.style.zIndex = u.getZIndex();
         u.addClass(this.panelDiv, 'is-visible');
         
