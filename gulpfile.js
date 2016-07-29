@@ -7,7 +7,7 @@ var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var minifycss = require('gulp-minify-css');
 var util = require('gulp-util');
-var makeumd = require('./makeumd.js');
+var version = require('./version.js');
 /**
  * 公共错误处理函数
  * 使用示例：
@@ -58,7 +58,7 @@ gulp.task('js-init', function() {
 });
 
 gulp.task('js', ['js-init'], function(){
-     makeumd.init([
+     version.init([
             'dist/js/u-date.js',
             'dist/js/u-date.min.js',
         ]);
@@ -75,7 +75,7 @@ gulp.task('css-init', function() {
 });
 
 gulp.task('css', ['css-init'], function(){
-     makeumd.init([
+     version.init([
             'dist/css/u-date.css',
             'dist/css/u-date.min.css',
         ]);
