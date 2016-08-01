@@ -384,6 +384,14 @@ u.ClockPicker.fn._zoomIn = function(newPage){
         }.bind(this);
         u.on(document,'click', callback);
 
+        //tab事件
+         u.on(self.input,'keydown',function(e){
+            var keyCode = e.keyCode;
+            if(keyCode==9) {
+                self.hide();
+            }
+        });
+
 
 	}
 	

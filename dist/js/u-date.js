@@ -47,6 +47,7 @@ u.DateTimePicker.fn.init = function(){
         }
         u.stopEvent(e);
     });
+
     u.on(this._input, 'blur', function(e){
         self._inputFocus = false;
     })
@@ -60,6 +61,8 @@ u.DateTimePicker.fn.init = function(){
             u.stopEvent(e);
         });
     }
+
+
 
     if (u.hasClass(this._element, 'time')){
         this.type = 'datetime';
@@ -1123,6 +1126,13 @@ u.DateTimePicker.fn.show = function(evt){
         };
         u.on(document,'click', callback);
 
+        //tab事件
+         u.on(self._input,'keydown',function(e){
+            var keyCode = e.keyCode;
+            if(keyCode==9) {
+                self.onCancel();
+            }
+        });
         document.body.onscroll = function(){
             u.showPanelByEle({
                 ele:self._input,
@@ -2767,6 +2777,14 @@ u.ClockPicker.fn._zoomIn = function(newPage){
             }
         }.bind(this);
         u.on(document,'click', callback);
+
+        //tab事件
+         u.on(self.input,'keydown',function(e){
+            var keyCode = e.keyCode;
+            if(keyCode==9) {
+                self.hide();
+            }
+        });
 
 
 	}
