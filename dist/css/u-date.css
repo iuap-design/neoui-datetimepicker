@@ -18,13 +18,15 @@
 
 .u-time-input {
   border: none;
+  height: 25px \9;
+  line-height: 25px \9;
   width: 20px;
   text-align: center; }
 
 /* datetimepicker */
 .u-clock-ul {
   background-color: #fff;
-  position: fixed;
+  position: absolute;
   list-style: none;
   height: auto;
   width: auto;
@@ -441,7 +443,7 @@
 
 /* datetimepicker */
 .u-date-panel {
-  position: fixed;
+  position: absolute;
   left: 0;
   right: 0;
   top: 10%;
@@ -451,7 +453,6 @@
   width: 90%;
   font-size: 12px;
   padding: 16px;
-  margin: auto;
   display: none;
   background-color: #fff;
   opacity: 0;

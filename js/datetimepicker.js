@@ -1085,9 +1085,7 @@ u.DateTimePicker.fn.show = function(evt){
         // }
         
 
-        //this._element.parentNode.appendChild(this._panel);
-        document.body.appendChild(this._panel);
-
+        this._element.parentNode.appendChild(this._panel);
     }
     this.pickerDate = this.date || new Date();
     this._updateDate();
@@ -1104,12 +1102,23 @@ u.DateTimePicker.fn.show = function(evt){
     }
     u.addClass(this._panel, 'is-visible');
     if(!u.isMobile){
-        //调整left和top
-        u.showPanelByEle({
-            ele:this._input,
-            panel:this._panel,
-            position:"bottomLeft"
-        });
+        if(this.options.showFix){
+            this._panel.style.position = 'fixed';
+            u.showPanelByEle({
+                ele:this._input,
+                panel:this._panel,
+                position:"bottomLeft"
+            });
+        }else{
+            //调整left和top
+            this.left = this.element.offsetLeft;
+            var inputHeight = this.element.offsetHeight;
+            this.top = this.element.offsetTop + inputHeight;
+            this._panel.style.left = this.left + 'px';
+            this._panel.style.top = this.top + 'px';
+        }
+        
+
         this._panel.style.marginLeft = '0px';
         var callback = function (e) {
             if (e !== evt && e.target !== self._input && !u.hasClass(e.target,'u-date-content-year-cell')  && !u.hasClass(e.target,'u-date-content-year-cell') &&u.closest(e.target,'u-date-panel') !== self._panel && self._inputFocus != true) {
@@ -1119,6 +1128,7 @@ u.DateTimePicker.fn.show = function(evt){
         };
         u.on(document,'click', callback);
 
+
         //tab事件
          u.on(self._input,'keydown',function(e){
             var keyCode = e.keyCode;
@@ -1126,13 +1136,7 @@ u.DateTimePicker.fn.show = function(evt){
                 self.onCancel();
             }
         });
-        document.body.onscroll = function(){
-            u.showPanelByEle({
-                ele:self._input,
-                panel:self._panel,
-                position:"bottomLeft"
-            });
-        }
+      
     }
     
     this.isShow = true;

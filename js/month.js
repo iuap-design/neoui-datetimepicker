@@ -14,6 +14,7 @@ u.Month = u.BaseComponent.extend({
 			this.defaultMonth = this.month;
 			
 			u.on(this.input, 'blur',function(e){
+				self._inputFocus = false;
 	        	this.setValue(this.input.value);
 	        }.bind(this));
 	        
@@ -34,7 +35,7 @@ u.Month.fn.createPanel = function(){
 		return;
 	}
 	var oThis = this;
-	this.panelDiv = u.makeDOM('<div class="u-date-panel" style="padding:0px;margin:0px;"></div>');
+	this.panelDiv = u.makeDOM('<div class="u-date-panel" style="margin:0px;"></div>');
 	this.panelContentDiv = u.makeDOM('<div class="u-date-content"></div>');
 	this.panelDiv.appendChild(this.panelContentDiv);
 	
@@ -124,7 +125,8 @@ u.Month.fn.setValue = function(value) {
 
 u.Month.fn.focusEvent = function() {
 	var self = this;
-	u.on(this.element,'click', function(e) {
+	u.on(this.input,'focus', function(e) {
+		self._inputFocus = true;
 		self.show(e);
 
 		if (e.stopPropagation) {
@@ -141,13 +143,8 @@ u.Month.fn.clickEvent = function() {
 	var self = this;		
 	var caret = this.element.nextSibling
 	u.on(caret,'click',function(e) {
-		self.show(e);
-		if (e.stopPropagation) {
-			e.stopPropagation();
-		} else {
-			e.cancelBubble = true;
-		}
-
+		self.input.focus();
+        u.stopEvent(e);
 	})
 }
 
@@ -159,24 +156,29 @@ u.Month.fn.show = function(evt) {
 	this.width = this.element.offsetWidth;
 	if(this.width < 300)
 		this.width = 300;
-    u.showPanelByEle({
+	 if(this.options.showFix){
+        this.panelDiv.style.position = 'fixed';
+        u.showPanelByEle({
             ele:this.input,
             panel:this.panelDiv,
             position:"bottomLeft"
         });
-    document.body.onscroll = function(){
-        u.showPanelByEle({
-            ele:oThis.input,
-            panel:oThis.panelDiv,
-            position:"bottomLeft"
-        });
+    }else{
+    	//调整left和top
+	    this.left = this.element.offsetLeft;
+	    var inputHeight = this.element.offsetHeight;
+	    this.top = this.element.offsetTop + inputHeight;
+	    this.panelDiv.style.left = this.left + 'px';
+	    this.panelDiv.style.top = this.top + 'px';
     }
+
+    
 	this.panelDiv.style.width = 152 + 'px';
 	this.panelDiv.style.zIndex = u.getZIndex();
     u.addClass(this.panelDiv, 'is-visible');
         
     var callback = function (e) {
-        if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target)) {
+        if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target) && self._inputFocus != true) {
         	u.off(document,'click',callback);
             // document.removeEventListener('click', callback);
         	this.hide();

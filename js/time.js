@@ -11,6 +11,7 @@ u.Time = u.BaseComponent.extend({
 			
 			
 	        u.on(this.input, 'blur',function(e){
+	        	self._inputFocus = false;
 	        	this.setValue(this.input.value);
 	        }.bind(this));
 			
@@ -29,7 +30,7 @@ u.Time = u.BaseComponent.extend({
 		if(this.panelDiv)
 			return;
 		var oThis = this;
-		this.panelDiv = u.makeDOM('<div class="u-combo-ul" style="padding:0px;"></div>');
+		this.panelDiv = u.makeDOM('<div class="u-date-panel" style="padding:0px;"></div>');
 		this.panelContentDiv = u.makeDOM('<div class="u-time-content"></div>');
 		this.panelDiv.appendChild(this.panelContentDiv);
 		this.panelHourDiv = u.makeDOM('<div class="u-time-cell"></div>');
@@ -95,15 +96,10 @@ u.Time = u.BaseComponent.extend({
 	
 	u.Time.fn.focusEvent = function() {
 		var self = this;
-		u.on(this.element,'click', function(e) {
+		u.on(this.input,'focus', function(e) {
+			self._inputFocus = true;
 			self.show(e);
-
-			if (e.stopPropagation) {
-				e.stopPropagation();
-			} else {
-				e.cancelBubble = true;
-			}
-
+			u.stopEvent(e);
 		});
 	}
 	
@@ -112,13 +108,8 @@ u.Time = u.BaseComponent.extend({
 		var self = this;		
 		var caret = this.element.nextSibling
 		u.on(caret,'click',function(e) {
-			self.show(e);
-			if (e.stopPropagation) {
-				e.stopPropagation();
-			} else {
-				e.cancelBubble = true;
-			}
-
+			self.input.focus();
+        	u.stopEvent(e);
 		})
 	}
 
@@ -137,24 +128,28 @@ u.Time = u.BaseComponent.extend({
 			this.width = 300;
 		
 		this.panelDiv.style.width = this.width + 'px';
-		u.showPanelByEle({
-            ele:this.input,
-            panel:this.panelDiv,
-            position:"bottomLeft"
-        });
+		this.panelDiv.style.maxWidth = this.width + 'px';
+		if(this.options.showFix){
+    		this.panelDiv.style.position = 'fixed';
+    		u.showPanelByEle({
+	            ele:this.input,
+	            panel:this.panelDiv,
+	            position:"bottomLeft"
+	        });
+    	}else{
+    		//调整left和top
+		    this.left = this.element.offsetLeft;
+		    var inputHeight = this.element.offsetHeight;
+		    this.top = this.element.offsetTop + inputHeight;
+		    this.panelDiv.style.left = this.left + 'px';
+		    this.panelDiv.style.top = this.top + 'px';
+    	}
+		
 		this.panelDiv.style.zIndex = u.getZIndex();
         u.addClass(this.panelDiv, 'is-visible');
 
-        document.body.onscroll = function(){
-            u.showPanelByEle({
-                ele:oThis.input,
-                panel:oThis.panelDiv,
-                position:"bottomLeft"
-            });
-        }
-        
         var callback = function (e) {
-            if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target)) {
+            if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target) && self._inputFocus != true) {
             	u.off(document,'click',callback);
                 // document.removeEventListener('click', callback);
                 this.hide();

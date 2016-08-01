@@ -1092,9 +1092,7 @@ u.DateTimePicker.fn.show = function(evt){
         // }
         
 
-        //this._element.parentNode.appendChild(this._panel);
-        document.body.appendChild(this._panel);
-
+        this._element.parentNode.appendChild(this._panel);
     }
     this.pickerDate = this.date || new Date();
     this._updateDate();
@@ -1111,12 +1109,23 @@ u.DateTimePicker.fn.show = function(evt){
     }
     u.addClass(this._panel, 'is-visible');
     if(!u.isMobile){
-        //调整left和top
-        u.showPanelByEle({
-            ele:this._input,
-            panel:this._panel,
-            position:"bottomLeft"
-        });
+        if(this.options.showFix){
+            this._panel.style.position = 'fixed';
+            u.showPanelByEle({
+                ele:this._input,
+                panel:this._panel,
+                position:"bottomLeft"
+            });
+        }else{
+            //调整left和top
+            this.left = this.element.offsetLeft;
+            var inputHeight = this.element.offsetHeight;
+            this.top = this.element.offsetTop + inputHeight;
+            this._panel.style.left = this.left + 'px';
+            this._panel.style.top = this.top + 'px';
+        }
+        
+
         this._panel.style.marginLeft = '0px';
         var callback = function (e) {
             if (e !== evt && e.target !== self._input && !u.hasClass(e.target,'u-date-content-year-cell')  && !u.hasClass(e.target,'u-date-content-year-cell') &&u.closest(e.target,'u-date-panel') !== self._panel && self._inputFocus != true) {
@@ -1126,6 +1135,7 @@ u.DateTimePicker.fn.show = function(evt){
         };
         u.on(document,'click', callback);
 
+
         //tab事件
          u.on(self._input,'keydown',function(e){
             var keyCode = e.keyCode;
@@ -1133,13 +1143,7 @@ u.DateTimePicker.fn.show = function(evt){
                 self.onCancel();
             }
         });
-        document.body.onscroll = function(){
-            u.showPanelByEle({
-                ele:self._input,
-                panel:self._panel,
-                position:"bottomLeft"
-            });
-        }
+      
     }
     
     this.isShow = true;
@@ -1481,6 +1485,7 @@ u.Time = u.BaseComponent.extend({
 			
 			
 	        u.on(this.input, 'blur',function(e){
+	        	self._inputFocus = false;
 	        	this.setValue(this.input.value);
 	        }.bind(this));
 			
@@ -1499,7 +1504,7 @@ u.Time = u.BaseComponent.extend({
 		if(this.panelDiv)
 			return;
 		var oThis = this;
-		this.panelDiv = u.makeDOM('<div class="u-combo-ul" style="padding:0px;"></div>');
+		this.panelDiv = u.makeDOM('<div class="u-date-panel" style="padding:0px;"></div>');
 		this.panelContentDiv = u.makeDOM('<div class="u-time-content"></div>');
 		this.panelDiv.appendChild(this.panelContentDiv);
 		this.panelHourDiv = u.makeDOM('<div class="u-time-cell"></div>');
@@ -1565,15 +1570,10 @@ u.Time = u.BaseComponent.extend({
 	
 	u.Time.fn.focusEvent = function() {
 		var self = this;
-		u.on(this.element,'click', function(e) {
+		u.on(this.input,'focus', function(e) {
+			self._inputFocus = true;
 			self.show(e);
-
-			if (e.stopPropagation) {
-				e.stopPropagation();
-			} else {
-				e.cancelBubble = true;
-			}
-
+			u.stopEvent(e);
 		});
 	}
 	
@@ -1582,13 +1582,8 @@ u.Time = u.BaseComponent.extend({
 		var self = this;		
 		var caret = this.element.nextSibling
 		u.on(caret,'click',function(e) {
-			self.show(e);
-			if (e.stopPropagation) {
-				e.stopPropagation();
-			} else {
-				e.cancelBubble = true;
-			}
-
+			self.input.focus();
+        	u.stopEvent(e);
 		})
 	}
 
@@ -1607,24 +1602,28 @@ u.Time = u.BaseComponent.extend({
 			this.width = 300;
 		
 		this.panelDiv.style.width = this.width + 'px';
-		u.showPanelByEle({
-            ele:this.input,
-            panel:this.panelDiv,
-            position:"bottomLeft"
-        });
+		this.panelDiv.style.maxWidth = this.width + 'px';
+		if(this.options.showFix){
+    		this.panelDiv.style.position = 'fixed';
+    		u.showPanelByEle({
+	            ele:this.input,
+	            panel:this.panelDiv,
+	            position:"bottomLeft"
+	        });
+    	}else{
+    		//调整left和top
+		    this.left = this.element.offsetLeft;
+		    var inputHeight = this.element.offsetHeight;
+		    this.top = this.element.offsetTop + inputHeight;
+		    this.panelDiv.style.left = this.left + 'px';
+		    this.panelDiv.style.top = this.top + 'px';
+    	}
+		
 		this.panelDiv.style.zIndex = u.getZIndex();
         u.addClass(this.panelDiv, 'is-visible');
 
-        document.body.onscroll = function(){
-            u.showPanelByEle({
-                ele:oThis.input,
-                panel:oThis.panelDiv,
-                position:"bottomLeft"
-            });
-        }
-        
         var callback = function (e) {
-            if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target)) {
+            if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target) && self._inputFocus != true) {
             	u.off(document,'click',callback);
                 // document.removeEventListener('click', callback);
                 this.hide();
@@ -1687,6 +1686,7 @@ u.YearMonth = u.BaseComponent.extend({
 			this.month = d.getMonth() + 1;
 			
 			u.on(this.input, 'blur',function(e){
+                self._inputFocus = false;
 	        	this.setValue(this.input.value);
 	        }.bind(this));
 	        
@@ -1707,7 +1707,7 @@ u.YearMonth.fn.createPanel = function(){
 		return;
 	}
 	var oThis = this;
-	this.panelDiv = u.makeDOM('<div class="u-date-panel" style="padding:0px;margin:0px;"></div>');
+	this.panelDiv = u.makeDOM('<div class="u-date-panel" style="margin:0px;"></div>');
 	this.panelContentDiv = u.makeDOM('<div class="u-date-content"></div>');
 	this.panelDiv.appendChild(this.panelContentDiv);
 	
@@ -1878,15 +1878,10 @@ u.YearMonth.fn.setValue = function(value) {
 
 u.YearMonth.fn.focusEvent = function() {
 	var self = this;
-	u.on(this.element,'click', function(e) {
+	u.on(this.input,'focus', function(e) {
+        self._inputFocus = true;
 		self.show(e);
-
-		if (e.stopPropagation) {
-			e.stopPropagation();
-		} else {
-			e.cancelBubble = true;
-		}
-
+		u.stopEvent(e);
 	});
 }
 
@@ -1895,13 +1890,8 @@ u.YearMonth.fn.clickEvent = function() {
 	var self = this;		
 	var caret = this.element.nextSibling
 	u.on(caret,'click',function(e) {
-		self.show(e);
-		if (e.stopPropagation) {
-			e.stopPropagation();
-		} else {
-			e.cancelBubble = true;
-		}
-
+		self.input.focus();
+        u.stopEvent(e);
 	})
 }
 
@@ -1923,24 +1913,29 @@ u.YearMonth.fn.show = function(evt) {
 		this.width = 300;
     
 	this.panelDiv.style.width = this.width + 'px';
-	u.showPanelByEle({
+
+    if(this.options.showFix){
+        this.panelDiv.style.position = 'fixed';
+        u.showPanelByEle({
             ele:this.input,
             panel:this.panelDiv,
             position:"bottomLeft"
         });
-
-     document.body.onscroll = function(){
-        u.showPanelByEle({
-            ele:oThis.input,
-            panel:oThis.panelDiv,
-            position:"bottomLeft"
-        });
+    }else{
+    	//调整left和top
+        this.left = this.element.offsetLeft;
+        var inputHeight = this.element.offsetHeight;
+        this.top = this.element.offsetTop + inputHeight;
+        this.panelDiv.style.left = this.left + 'px';
+        this.panelDiv.style.top = this.top + 'px';
     }
+
+    
 	this.panelDiv.style.zIndex = u.getZIndex();
     u.addClass(this.panelDiv, 'is-visible');
     var oThis = this;
     var callback = function (e) {
-        if (e !== evt && e.target !== oThis.input && !oThis.clickPanel(e.target)) {
+        if (e !== evt && e.target !== oThis.input && !oThis.clickPanel(e.target)  && self._inputFocus != true) {
             // document.removeEventListener('click', callback);
             u.off(document,'click',callback);
         	oThis.hide();
@@ -1992,6 +1987,7 @@ u.Year = u.BaseComponent.extend({
 			this.startYear = this.year - this.year % 10 - 1;
 		
 			u.on(this.input, 'blur',function(e){
+				self._inputFocus = false;
 	        	this.setValue(this.input.value);
 	        }.bind(this));
 	        
@@ -2012,7 +2008,7 @@ u.Year.fn.createPanel = function(){
 		return;
 	}
 	var oThis = this;
-	this.panelDiv = u.makeDOM('<div class="u-date-panel" style="padding:0px;margin:0px;"></div>');
+	this.panelDiv = u.makeDOM('<div class="u-date-panel" style="margin:0px;"></div>');
 	this.panelContentDiv = u.makeDOM('<div class="u-date-content"></div>');
 	this.panelDiv.appendChild(this.panelContentDiv);
 	
@@ -2091,15 +2087,10 @@ u.Year.fn.setValue = function(value) {
 
 u.Year.fn.focusEvent = function() {
 	var self = this;
-	u.on(this.element,'click', function(e) {
+	u.on(this.input,'focus', function(e) {
+		self._inputFocus = true;
 		self.show(e);
-
-		if (e.stopPropagation) {
-			e.stopPropagation();
-		} else {
-			e.cancelBubble = true;
-		}
-
+		u.stopEvent(e);
 	});
 }
 
@@ -2108,13 +2099,8 @@ u.Year.fn.clickEvent = function() {
 	var self = this;		
 	var caret = this.element.nextSibling
 	u.on(caret,'click',function(e) {
-		self.show(e);
-		if (e.stopPropagation) {
-			e.stopPropagation();
-		} else {
-			e.cancelBubble = true;
-		}
-
+		self.input.focus();
+    	u.stopEvent(e);
 	})
 }
 
@@ -2128,23 +2114,26 @@ u.Year.fn.show = function(evt) {
 		this.width = 300;
     
 	this.panelDiv.style.width = 152 + 'px';
-	u.showPanelByEle({
+	if(this.options.showFix){
+		this.panelDiv.style.position = 'fixed';
+		u.showPanelByEle({
             ele:this.input,
             panel:this.panelDiv,
             position:"bottomLeft"
         });
-    document.body.onscroll = function(){
-        u.showPanelByEle({
-            ele:oThis.input,
-            panel:oThis.panelDiv,
-            position:"bottomLeft"
-        });
-    }
+	}else{
+	    //调整left和top
+	    this.left = this.element.offsetLeft;
+	    var inputHeight = this.element.offsetHeight;
+	    this.top = this.element.offsetTop + inputHeight;
+	    this.panelDiv.style.left = this.left + 'px';
+	    this.panelDiv.style.top = this.top + 'px';
+	}
 	this.panelDiv.style.zIndex = u.getZIndex();
     u.addClass(this.panelDiv, 'is-visible');
         
     var callback = function (e) {
-        if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target)) {
+        if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target) && self._inputFocus != true) {
         	u.off(document,'click',callback);
             // document.removeEventListener('click', callback);
         	this.hide();
@@ -2195,6 +2184,7 @@ u.Month = u.BaseComponent.extend({
 			this.defaultMonth = this.month;
 			
 			u.on(this.input, 'blur',function(e){
+				self._inputFocus = false;
 	        	this.setValue(this.input.value);
 	        }.bind(this));
 	        
@@ -2215,7 +2205,7 @@ u.Month.fn.createPanel = function(){
 		return;
 	}
 	var oThis = this;
-	this.panelDiv = u.makeDOM('<div class="u-date-panel" style="padding:0px;margin:0px;"></div>');
+	this.panelDiv = u.makeDOM('<div class="u-date-panel" style="margin:0px;"></div>');
 	this.panelContentDiv = u.makeDOM('<div class="u-date-content"></div>');
 	this.panelDiv.appendChild(this.panelContentDiv);
 	
@@ -2305,7 +2295,8 @@ u.Month.fn.setValue = function(value) {
 
 u.Month.fn.focusEvent = function() {
 	var self = this;
-	u.on(this.element,'click', function(e) {
+	u.on(this.input,'focus', function(e) {
+		self._inputFocus = true;
 		self.show(e);
 
 		if (e.stopPropagation) {
@@ -2322,13 +2313,8 @@ u.Month.fn.clickEvent = function() {
 	var self = this;		
 	var caret = this.element.nextSibling
 	u.on(caret,'click',function(e) {
-		self.show(e);
-		if (e.stopPropagation) {
-			e.stopPropagation();
-		} else {
-			e.cancelBubble = true;
-		}
-
+		self.input.focus();
+        u.stopEvent(e);
 	})
 }
 
@@ -2340,24 +2326,29 @@ u.Month.fn.show = function(evt) {
 	this.width = this.element.offsetWidth;
 	if(this.width < 300)
 		this.width = 300;
-    u.showPanelByEle({
+	 if(this.options.showFix){
+        this.panelDiv.style.position = 'fixed';
+        u.showPanelByEle({
             ele:this.input,
             panel:this.panelDiv,
             position:"bottomLeft"
         });
-    document.body.onscroll = function(){
-        u.showPanelByEle({
-            ele:oThis.input,
-            panel:oThis.panelDiv,
-            position:"bottomLeft"
-        });
+    }else{
+    	//调整left和top
+	    this.left = this.element.offsetLeft;
+	    var inputHeight = this.element.offsetHeight;
+	    this.top = this.element.offsetTop + inputHeight;
+	    this.panelDiv.style.left = this.left + 'px';
+	    this.panelDiv.style.top = this.top + 'px';
     }
+
+    
 	this.panelDiv.style.width = 152 + 'px';
 	this.panelDiv.style.zIndex = u.getZIndex();
     u.addClass(this.panelDiv, 'is-visible');
         
     var callback = function (e) {
-        if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target)) {
+        if (e !== evt && e.target !== this.input && !oThis.clickPanel(e.target) && self._inputFocus != true) {
         	u.off(document,'click',callback);
             // document.removeEventListener('click', callback);
         	this.hide();
@@ -2562,7 +2553,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 			this.hide();
 		}.bind(this));
 		
-		document.body.appendChild(this.panelDiv);
+		this.element.parentNode.appendChild(this.panelDiv);
 	}
 	
 	u.ClockPicker.fn.setHand = function(){
@@ -2750,21 +2741,22 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 		       self.hide();
 		    })
         }else{
-	        u.showPanelByEle({
-	            ele:this.input,
-	            panel:this.panelDiv,
-	            position:"bottomLeft"
-	        });
-		    // document.body.onscroll = function(){
-		    window.onscroll = function(){
-		        u.showPanelByEle({
-		            ele:self.input,
-		            panel:self.panelDiv,
+        	if(this.options.showFix){
+        		this.panelDiv.style.position = 'fixed';
+        		u.showPanelByEle({
+		            ele:this.input,
+		            panel:this.panelDiv,
 		            position:"bottomLeft"
 		        });
-		    }  
+        	}else{
+        		this.left = this.element.offsetLeft;
+		        var inputHeight = this.element.offsetHeight;
+		        this.top = this.element.offsetTop + inputHeight;
+		        this.panelDiv.style.left = this.left + 'px';
+				this.panelDiv.style.top = this.top + 'px';
+        	}
         }
-        
+
 		this.panelDiv.style.zIndex = u.getZIndex();
         u.addClass(this.panelDiv, 'is-visible');
         
