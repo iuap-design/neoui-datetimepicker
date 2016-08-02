@@ -168,7 +168,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 			this.hide();
 		}.bind(this));
 		
-		this.element.parentNode.appendChild(this.panelDiv);
+		
 	}
 	
 	u.ClockPicker.fn.setHand = function(){
@@ -357,6 +357,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 		    })
         }else{
         	if(this.options.showFix){
+        		document.body.appendChild(this.panelDiv);
         		this.panelDiv.style.position = 'fixed';
         		u.showPanelByEle({
 		            ele:this.input,
@@ -364,6 +365,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 		            position:"bottomLeft"
 		        });
         	}else{
+        		this.element.parentNode.appendChild(this.panelDiv);
         		this.left = this.element.offsetLeft;
 		        var inputHeight = this.element.offsetHeight;
 		        this.top = this.element.offsetTop + inputHeight;

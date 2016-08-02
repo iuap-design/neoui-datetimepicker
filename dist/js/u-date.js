@@ -1092,7 +1092,7 @@ u.DateTimePicker.fn.show = function(evt){
         // }
         
 
-        this._element.parentNode.appendChild(this._panel);
+        
     }
     this.pickerDate = this.date || new Date();
     this._updateDate();
@@ -1110,6 +1110,7 @@ u.DateTimePicker.fn.show = function(evt){
     u.addClass(this._panel, 'is-visible');
     if(!u.isMobile){
         if(this.options.showFix){
+            document.body.appendChild(this._panel);
             this._panel.style.position = 'fixed';
             u.showPanelByEle({
                 ele:this._input,
@@ -1118,6 +1119,7 @@ u.DateTimePicker.fn.show = function(evt){
             });
         }else{
             //调整left和top
+            this._element.parentNode.appendChild(this._panel);
             this.left = this.element.offsetLeft;
             var inputHeight = this.element.offsetHeight;
             this.top = this.element.offsetTop + inputHeight;
@@ -1538,7 +1540,7 @@ u.Time = u.BaseComponent.extend({
 		this.panelHourInput.value = d.getHours() > 9? '' + d.getHours():'0' + d.getHours();
 		this.panelMinInput.value = d.getMinutes() > 9? '' + d.getMinutes():'0' + d.getMinutes();	
 		this.panelSecInput.value = d.getSeconds() > 9? '' + d.getSeconds():'0' + d.getSeconds();
-		this.element.parentNode.appendChild(this.panelDiv);
+		
 	}
 	
 	u.Time.fn.setValue = function(value) {
@@ -1604,6 +1606,7 @@ u.Time = u.BaseComponent.extend({
 		this.panelDiv.style.width = this.width + 'px';
 		this.panelDiv.style.maxWidth = this.width + 'px';
 		if(this.options.showFix){
+			document.body.appendChild(this.panelDiv);
     		this.panelDiv.style.position = 'fixed';
     		u.showPanelByEle({
 	            ele:this.input,
@@ -1611,6 +1614,7 @@ u.Time = u.BaseComponent.extend({
 	            position:"bottomLeft"
 	        });
     	}else{
+    		this.element.parentNode.appendChild(this.panelDiv);
     		//调整left和top
 		    this.left = this.element.offsetLeft;
 		    var inputHeight = this.element.offsetHeight;
@@ -1727,7 +1731,7 @@ u.YearMonth.fn.createPanel = function(){
     this.panelContentDiv.appendChild(this.preBtn);
     this.panelContentDiv.appendChild(this.nextBtn);
     this._fillYear();
-	this.element.parentNode.appendChild(this.panelDiv);
+	
 }
 
 /**
@@ -1915,6 +1919,7 @@ u.YearMonth.fn.show = function(evt) {
 	this.panelDiv.style.width = this.width + 'px';
 
     if(this.options.showFix){
+        document.body.appendChild(this.panelDiv);
         this.panelDiv.style.position = 'fixed';
         u.showPanelByEle({
             ele:this.input,
@@ -1922,6 +1927,7 @@ u.YearMonth.fn.show = function(evt) {
             position:"bottomLeft"
         });
     }else{
+        this.element.parentNode.appendChild(this.panelDiv);
     	//调整left和top
         this.left = this.element.offsetLeft;
         var inputHeight = this.element.offsetHeight;
@@ -2028,7 +2034,7 @@ u.Year.fn.createPanel = function(){
     this.panelContentDiv.appendChild(this.preBtn);
     this.panelContentDiv.appendChild(this.nextBtn);
     this._fillYear();
-	this.element.parentNode.appendChild(this.panelDiv);
+	
 }
 
 /**
@@ -2115,6 +2121,7 @@ u.Year.fn.show = function(evt) {
     
 	this.panelDiv.style.width = 152 + 'px';
 	if(this.options.showFix){
+		document.body.appendChild(this.panelDiv);
 		this.panelDiv.style.position = 'fixed';
 		u.showPanelByEle({
             ele:this.input,
@@ -2122,6 +2129,7 @@ u.Year.fn.show = function(evt) {
             position:"bottomLeft"
         });
 	}else{
+		this.element.parentNode.appendChild(this.panelDiv);
 	    //调整left和top
 	    this.left = this.element.offsetLeft;
 	    var inputHeight = this.element.offsetHeight;
@@ -2223,7 +2231,7 @@ u.Month.fn.createPanel = function(){
     this.panelContentDiv.appendChild(this.preBtn);
     this.panelContentDiv.appendChild(this.nextBtn);
     this._fillMonth();
-	this.element.parentNode.appendChild(this.panelDiv);
+	
 }
 
 
@@ -2327,6 +2335,7 @@ u.Month.fn.show = function(evt) {
 	if(this.width < 300)
 		this.width = 300;
 	 if(this.options.showFix){
+	 	document.body.appendChild(this.panelDiv);
         this.panelDiv.style.position = 'fixed';
         u.showPanelByEle({
             ele:this.input,
@@ -2334,6 +2343,7 @@ u.Month.fn.show = function(evt) {
             position:"bottomLeft"
         });
     }else{
+    	this.element.parentNode.appendChild(this.panelDiv);
     	//调整left和top
 	    this.left = this.element.offsetLeft;
 	    var inputHeight = this.element.offsetHeight;
@@ -2553,7 +2563,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 			this.hide();
 		}.bind(this));
 		
-		this.element.parentNode.appendChild(this.panelDiv);
+		
 	}
 	
 	u.ClockPicker.fn.setHand = function(){
@@ -2742,6 +2752,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 		    })
         }else{
         	if(this.options.showFix){
+        		document.body.appendChild(this.panelDiv);
         		this.panelDiv.style.position = 'fixed';
         		u.showPanelByEle({
 		            ele:this.input,
@@ -2749,6 +2760,7 @@ u.ClockPicker.fn._zoomIn = function(newPage){
 		            position:"bottomLeft"
 		        });
         	}else{
+        		this.element.parentNode.appendChild(this.panelDiv);
         		this.left = this.element.offsetLeft;
 		        var inputHeight = this.element.offsetHeight;
 		        this.top = this.element.offsetTop + inputHeight;

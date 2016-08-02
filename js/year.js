@@ -56,7 +56,7 @@ u.Year.fn.createPanel = function(){
     this.panelContentDiv.appendChild(this.preBtn);
     this.panelContentDiv.appendChild(this.nextBtn);
     this._fillYear();
-	this.element.parentNode.appendChild(this.panelDiv);
+	
 }
 
 /**
@@ -143,6 +143,7 @@ u.Year.fn.show = function(evt) {
     
 	this.panelDiv.style.width = 152 + 'px';
 	if(this.options.showFix){
+		document.body.appendChild(this.panelDiv);
 		this.panelDiv.style.position = 'fixed';
 		u.showPanelByEle({
             ele:this.input,
@@ -150,6 +151,7 @@ u.Year.fn.show = function(evt) {
             position:"bottomLeft"
         });
 	}else{
+		this.element.parentNode.appendChild(this.panelDiv);
 	    //调整left和top
 	    this.left = this.element.offsetLeft;
 	    var inputHeight = this.element.offsetHeight;
