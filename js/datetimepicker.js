@@ -1085,7 +1085,6 @@ u.DateTimePicker.fn.show = function(evt){
         // }
         
 
-        this._element.parentNode.appendChild(this._panel);
     }
     this.pickerDate = this.date || new Date();
     this._updateDate();
@@ -1103,6 +1102,7 @@ u.DateTimePicker.fn.show = function(evt){
     u.addClass(this._panel, 'is-visible');
     if(!u.isMobile){
         if(this.options.showFix){
+            document.body.appendChild(this._panel);
             this._panel.style.position = 'fixed';
             u.showPanelByEle({
                 ele:this._input,
@@ -1110,6 +1110,7 @@ u.DateTimePicker.fn.show = function(evt){
                 position:"bottomLeft"
             });
         }else{
+            this._element.parentNode.appendChild(this._panel);
             //调整left和top
             this.left = this.element.offsetLeft;
             var inputHeight = this.element.offsetHeight;

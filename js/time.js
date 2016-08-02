@@ -64,7 +64,6 @@ u.Time = u.BaseComponent.extend({
 		this.panelHourInput.value = d.getHours() > 9? '' + d.getHours():'0' + d.getHours();
 		this.panelMinInput.value = d.getMinutes() > 9? '' + d.getMinutes():'0' + d.getMinutes();	
 		this.panelSecInput.value = d.getSeconds() > 9? '' + d.getSeconds():'0' + d.getSeconds();
-		this.element.parentNode.appendChild(this.panelDiv);
 	}
 	
 	u.Time.fn.setValue = function(value) {
@@ -130,6 +129,7 @@ u.Time = u.BaseComponent.extend({
 		this.panelDiv.style.width = this.width + 'px';
 		this.panelDiv.style.maxWidth = this.width + 'px';
 		if(this.options.showFix){
+			document.body.appendChild(this.panelDiv);
     		this.panelDiv.style.position = 'fixed';
     		u.showPanelByEle({
 	            ele:this.input,
@@ -137,6 +137,7 @@ u.Time = u.BaseComponent.extend({
 	            position:"bottomLeft"
 	        });
     	}else{
+    		this.element.parentNode.appendChild(this.panelDiv);
     		//调整left和top
 		    this.left = this.element.offsetLeft;
 		    var inputHeight = this.element.offsetHeight;

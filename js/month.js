@@ -53,7 +53,6 @@ u.Month.fn.createPanel = function(){
     this.panelContentDiv.appendChild(this.preBtn);
     this.panelContentDiv.appendChild(this.nextBtn);
     this._fillMonth();
-	this.element.parentNode.appendChild(this.panelDiv);
 }
 
 
@@ -157,6 +156,7 @@ u.Month.fn.show = function(evt) {
 	if(this.width < 300)
 		this.width = 300;
 	 if(this.options.showFix){
+	 	document.body.appendChild(this.panelDiv);
         this.panelDiv.style.position = 'fixed';
         u.showPanelByEle({
             ele:this.input,
@@ -164,6 +164,7 @@ u.Month.fn.show = function(evt) {
             position:"bottomLeft"
         });
     }else{
+    	this.element.parentNode.appendChild(this.panelDiv);
     	//调整left和top
 	    this.left = this.element.offsetLeft;
 	    var inputHeight = this.element.offsetHeight;
