@@ -165,13 +165,35 @@ u.Month.fn.show = function(evt) {
             position:"bottomLeft"
         });
     }else{
-    	this.element.parentNode.appendChild(this.panelDiv);
-    	//调整left和top
-	    this.left = this.element.offsetLeft;
-	    var inputHeight = this.element.offsetHeight;
-	    this.top = this.element.offsetTop + inputHeight;
-	    this.panelDiv.style.left = this.left + 'px';
-	    this.panelDiv.style.top = this.top + 'px';
+    	// this.element.parentNode.appendChild(this.panelDiv);
+    	// //调整left和top
+	    // this.left = this.element.offsetLeft;
+	    // var inputHeight = this.element.offsetHeight;
+	    // this.top = this.element.offsetTop + inputHeight;
+	    // this.panelDiv.style.left = this.left + 'px';
+	    // this.panelDiv.style.top = this.top + 'px';
+
+	    var bodyWidth = document.body.clientWidth,bodyHeight = document.body.clientHeight,
+        panelWidth = this.panelDiv.offsetWidth,panelHeight = this.panelDiv.offsetHeight;
+
+        this.element.appendChild(this.panelDiv);
+        this.element.style.position = 'relative'; 
+   		this.left = this.input.offsetLeft;
+    	var inputHeight = this.input.offsetHeight;
+    	this.top = this.input.offsetTop + inputHeight;
+
+        if(this.left + panelWidth > bodyWidth){
+            this.left = bodyWidth - panelWidth;
+        }
+
+        if((this.top + panelHeight) > bodyHeight){
+            this.top = bodyHeight - panelHeight;
+        }
+    
+
+        this.panelDiv.style.left = this.left + 'px';
+        this.panelDiv.style.top = this.top + 'px';
+	    
     }
 
     

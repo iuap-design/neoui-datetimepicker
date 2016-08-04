@@ -1111,7 +1111,8 @@ u.DateTimePicker.fn.show = function(evt){
                 position:"bottomLeft"
             });
         }else{
-            
+            var bodyWidth = document.body.clientWidth,bodyHeight = document.body.clientHeight,
+                panelWidth = this._panel.offsetWidth,panelHeight = this._panel.offsetHeight
             //调整left和top
             // this._element.parentNode.appendChild(this._panel);
             this._element.appendChild(this._panel);
@@ -1121,8 +1122,19 @@ u.DateTimePicker.fn.show = function(evt){
             var inputHeight = this._input.offsetHeight;
             // this.top = this.element.offsetTop + inputHeight;
             this.top = this._input.offsetTop + inputHeight;
+
+            if(this.left + panelWidth > bodyWidth){
+                this.left = bodyWidth - panelWidth;
+            }
+
+            if((this.top + panelHeight) > bodyHeight){
+                this.top = bodyHeight - panelHeight;
+            }
+            
+
             this._panel.style.left = this.left + 'px';
             this._panel.style.top = this.top + 'px';
+
         }
         
 
