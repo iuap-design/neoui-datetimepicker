@@ -141,8 +141,10 @@ u.YearMonth.fn._fillMonth = function(){
     var oThis = this;
     u.on(monthPage, 'click', function(e){
         var _m = e.target._value;
-        oThis.month = _m;
-        monthPage.querySelector('.u-date-content-title').innerHTML = _m + '月';
+        if(_m){
+            oThis.month = _m;
+        }
+        monthPage.querySelector('.u-date-content-title').innerHTML = oThis.month + '月';
         oThis.setValue(oThis.year + '-' + oThis.month);
         oThis.hide();
     });
