@@ -5,11 +5,12 @@
     left: 0;
     right: 0;
     top: 10%;
+    line-height: 1.4;
     border-radius:4px;
     box-shadow: 0 19px 60px rgba(0,0,0,.3),0 15px 20px rgba(0,0,0,.22);
     //max-width:396px;
-    max-width:152px;
-    width:90%;
+    // max-width:152px;
+    width: 152px;
     font-size:12px;
     padding:16px;
     //margin: auto;
@@ -308,8 +309,8 @@
         position: relative;
     }
     .u_time_cell .u-input{
-    	display:block;
-    	width:30px;
+        display:block;
+        width:30px;
         height:56px;
     }
     .scroll-touch{
@@ -333,7 +334,7 @@
     .scroll-shadow{
         background: linear-gradient(#ffffff 0%,rgba(245,245,245,0) 52%, rgba(245,245,245,0) 48%, #ffffff 100%);
         z-index:99999;
-        position: absolute;			
+        position: absolute;         
         top: 0;
         left: 0;
         width: 100%;
@@ -352,7 +353,7 @@
 
     .scroll-touch dl{
         margin: 0px;
-    }	
+    }   
     .scroll-touch dd{
         user-select:none ;
         height:60px;
