@@ -1175,6 +1175,7 @@ u.DateTimePicker.fn.onOk = function(){
 
     }
     this.trigger('select', {value:this.pickerDate})
+    this.trigger('validate');
 }
 
 /**
@@ -1188,6 +1189,7 @@ u.DateTimePicker.fn.onCancel = function(){
     }catch(e){
 
     }
+    this.trigger('validate');
 }
 
 
