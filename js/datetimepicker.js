@@ -27,7 +27,9 @@ u.DateTimePicker.fn.init = function(){
     }
 
     setTimeout(function(){
-        self._input.setAttribute('readonly','readonly');
+        if (self._input) {
+             self._input.setAttribute('readonly','readonly');
+        }
     },1000);
    
     u.on(this._input, 'focus', function(e){
